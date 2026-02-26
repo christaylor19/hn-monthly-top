@@ -1,0 +1,180 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 10pt;
+  background-color: #f6f6ef;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #828282;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#root {
+  width: 85%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f6f6ef;
+}
+
+/* Header */
+.header {
+  background-color: #ff6600;
+  padding: 2px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header-logo {
+  font-weight: bold;
+  color: #000;
+  font-size: 10pt;
+  border: 1px solid #fff;
+  padding: 1px 3px;
+  margin-right: 4px;
+}
+
+.header-title {
+  font-weight: bold;
+  font-size: 10pt;
+  color: #000;
+}
+
+.header-nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header select {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 10pt;
+  border: 1px solid #cc5200;
+  background: #ff6600;
+  color: #000;
+  padding: 1px 2px;
+  cursor: pointer;
+}
+
+/* Story list */
+.story-list {
+  padding: 10px 0 0 0;
+}
+
+.story-row {
+  padding: 0 10px;
+  line-height: 1.1;
+}
+
+.story-row + .story-row {
+  margin-top: 5px;
+}
+
+.story-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.story-rank {
+  color: #828282;
+  text-align: right;
+  min-width: 28px;
+  display: inline-block;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.story-title a {
+  color: #000;
+  text-decoration: none;
+  font-size: 10pt;
+}
+
+.story-title a:visited {
+  color: #828282;
+}
+
+.story-domain {
+  font-size: 8pt;
+  color: #828282;
+  margin-left: 5px;
+}
+
+.story-subtext {
+  font-size: 8pt;
+  color: #828282;
+  padding-left: 32px;
+  margin-top: 1px;
+}
+
+.story-subtext a {
+  color: #828282;
+  text-decoration: none;
+}
+
+.story-subtext a:hover {
+  text-decoration: underline;
+}
+
+/* Loading */
+.loading {
+  padding: 20px 10px;
+  color: #828282;
+  font-size: 10pt;
+}
+
+/* Error */
+.error {
+  padding: 20px 10px;
+  color: #c00;
+  font-size: 10pt;
+}
+
+/* Empty state */
+.empty {
+  padding: 20px 10px;
+  color: #828282;
+  font-size: 10pt;
+}
+
+/* More link */
+.more-link {
+  padding: 10px 10px 20px 32px;
+  font-size: 10pt;
+}
+
+.more-link a {
+  color: #000;
+  text-decoration: none;
+}
+
+.more-link a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+.footer {
+  border-top: 2px solid #ff6600;
+  margin-top: 10px;
+  padding: 10px;
+  text-align: center;
+  color: #828282;
+  font-size: 8pt;
+}
