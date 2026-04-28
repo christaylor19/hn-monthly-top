@@ -1,18 +1,20 @@
 {
   "name": "hn-monthly-top",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "packageManager": "yarn@4.10.3",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "solid-js": "^1.9.10"
-  },
-  "devDependencies": {
-    "vite": "^7.3.1",
-    "vite-plugin-solid": "^2.11.10"
+    "dev": "yarn workspaces foreach -pi --all run dev",
+    "dev:frontend": "yarn workspace @hn-monthly-top/frontend dev",
+    "dev:server": "yarn workspace @hn-monthly-top/server dev",
+    "build": "yarn workspaces foreach -pt --all run build",
+    "build:frontend": "yarn workspace @hn-monthly-top/frontend build",
+    "build:server": "yarn workspace @hn-monthly-top/server build",
+    "start:server": "yarn workspace @hn-monthly-top/server start"
   }
 }

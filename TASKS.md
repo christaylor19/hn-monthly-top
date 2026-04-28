@@ -9,6 +9,8 @@ _Nothing currently in progress._
 
 ### Features
 
+- [ ] **User leaderboards** — per-month leaderboards showing: top submitters by number of stories, top submitters by total points, and top commenters by number of comments. Data is all available from Algolia. Clicking a username could link to their HN profile.
+- [ ] **Q&A within summary panel** — a text input at the bottom of the summary accordion letting you ask follow-up questions to the LLM. Context includes both the article content (if fetched) and the comments. Maintains a short conversation history within the session so follow-up questions work naturally.
 - [ ] **Year view** — show all 12 months as a grid, each cell showing the #1 story for that month. Good entry point for browsing a whole year.
 - [ ] **"Ask HN" / "Show HN" filter** — toggle to narrow to just those post types using the Algolia `tags` filter.
 - [ ] **Search within results** — client-side filter on the fetched stories list (title keyword search).
@@ -33,7 +35,8 @@ _Nothing currently in progress._
 - [ ] **Extract `timeAgo` to a util** — currently lives in `StoryRow.jsx`; should be in `src/utils/` if any other component needs it.
 - [ ] **Remove `hashchange` listener leak** — `App.jsx:73` adds a global listener on every render without cleanup. Wrap in `onCleanup`.
 - [ ] **CI** — add a basic GitHub Actions workflow: `npm ci`, `npm run build`. No tests yet but at least catches broken builds.
-- [ ] **Deploy** — ship to Vercel / Netlify / GitHub Pages. Currently only runs locally.
+- [ ] **Push deployment live** — actually deploy: create Railway project, set env vars (OPENAI_API_KEY, JINA_API_KEY, CORS_ORIGIN), update Vercel root directory to `apps/frontend` and set `VITE_API_URL` to Railway URL. Smoke test summarise feature in prod.
+- [ ] **Deploy** — ship to Vercel / Netlify / GitHub Pages. Currently only runs locally. Blocked on backend proxy if the OpenAI key needs protecting.
 
 ### Ideas / Maybe
 
@@ -52,3 +55,9 @@ _Nothing currently in progress._
 - [x] Pagination (load more)
 - [x] HN-style UI
 - [x] Fixed npm audit vulnerabilities — picomatch, postcss, vite (Apr 2026)
+- [x] LLM article + comment summaries via OpenAI (Apr 2026)
+- [x] Markdown-formatted summary output (Apr 2026)
+- [x] Settings cog with verbosity slider (Apr 2026)
+- [x] Migrated to Yarn workspaces monorepo with `apps/frontend` + `apps/server` (Apr 2026)
+- [x] Fastify backend proxy holding OpenAI/Jina keys server-side (Apr 2026)
+- [x] Railway deployment config (`railway.json`, `nixpacks.toml`) (Apr 2026)

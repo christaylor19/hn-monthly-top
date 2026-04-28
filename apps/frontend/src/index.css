@@ -169,6 +169,76 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Settings */
+.settings-wrap {
+  margin-left: auto;
+  position: relative;
+}
+
+.settings-cog {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14pt;
+  color: #000;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.settings-cog:hover,
+.settings-cog.active {
+  opacity: 1;
+}
+
+.settings-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #e6e6e0;
+  padding: 10px 14px;
+  min-width: 220px;
+  z-index: 100;
+  font-size: 9pt;
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-label {
+  font-weight: bold;
+  color: #000;
+  font-size: 8pt;
+}
+
+.settings-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-slider {
+  width: 100%;
+  accent-color: #ff6600;
+  cursor: pointer;
+}
+
+.settings-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  color: #828282;
+}
+
+.settings-slider-labels span.active {
+  color: #ff6600;
+  font-weight: bold;
+}
+
 /* Summarise button */
 .summarise-btn {
   background: none;
@@ -231,6 +301,41 @@ a:hover {
 .summary-text {
   color: #333;
   line-height: 1.5;
+}
+
+.summary-text p {
+  margin-bottom: 6px;
+}
+
+.summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-text strong {
+  color: #000;
+}
+
+.summary-text ul {
+  margin: 4px 0 6px 16px;
+  padding: 0;
+}
+
+.summary-text li {
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+
+.summary-footer {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.summary-title-only {
+  font-size: 8pt;
+  color: #828282;
+  font-style: italic;
 }
 
 .summary-loading {

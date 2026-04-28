@@ -1,11 +1,18 @@
 import { createSignal, createEffect, Show } from 'solid-js';
+import { marked } from 'marked';
 import { fetchComments } from '../api/comments';
 import { summariseArticle, summariseComments } from '../api/summarise';
+import { verbosity } from '../store/settings';
+
+marked.setOptions({ breaks: true });
 
 export default function SummaryPanel(props) {
   const [activeTab, setActiveTab] = createSignal('article');
   const [articleSummary, setArticleSummary] = createSignal(null);
+  const [articleTitleOnly, setArticleTitleOnly] = createSignal(false);
+  const [articleVerbosity, setArticleVerbosity] = createSignal(null);
   const [commentsSummary, setCommentsSummary] = createSignal(null);
+  const [commentsVerbosity, setCommentsVerbosity] = createSignal(null);
   const [articleState, setArticleState] = createSignal('idle'); // idle | loading | done | error
   const [commentsState, setCommentsState] = createSignal('idle');
   const [articleError, setArticleError] = createSignal(null);
@@ -24,8 +31,10 @@ export default function SummaryPanel(props) {
   async function loadArticle() {
     setArticleState('loading');
     try {
-      const summary = await summariseArticle(props.story.title, props.story.url);
-      setArticleSummary(summary);
+      const { text, titleOnly } = await summariseArticle(props.story.title, props.story.url);
+      setArticleSummary(text);
+      setArticleTitleOnly(titleOnly);
+      setArticleVerbosity(verbosity().value);
       setArticleState('done');
     } catch (e) {
       setArticleError(e.message);
@@ -39,6 +48,7 @@ export default function SummaryPanel(props) {
       const comments = await fetchComments(props.story.objectID);
       const summary = await summariseComments(props.story.title, comments);
       setCommentsSummary(summary);
+      setCommentsVerbosity(verbosity().value);
       setCommentsState('done');
     } catch (e) {
       setCommentsError(e.message);
@@ -75,6 +85,8 @@ export default function SummaryPanel(props) {
             <SummaryContent
               state={articleState()}
               text={articleSummary()}
+              titleOnly={articleTitleOnly()}
+              stale={articleState() === 'done' && articleVerbosity() !== verbosity().value}
               error={articleError()}
               onRetry={loadArticle}
             />
@@ -83,6 +95,7 @@ export default function SummaryPanel(props) {
             <SummaryContent
               state={commentsState()}
               text={commentsSummary()}
+              stale={commentsState() === 'done' && commentsVerbosity() !== verbosity().value}
               error={commentsError()}
               onRetry={loadComments}
             />
@@ -100,7 +113,15 @@ function SummaryContent(props) {
         <span class="summary-loading">Summarising...</span>
       </Show>
       <Show when={props.state === 'done'}>
-        <p class="summary-text">{props.text}</p>
+        <div class="summary-text" innerHTML={marked.parse(props.text)} />
+        <div class="summary-footer">
+          <Show when={props.titleOnly}>
+            <span class="summary-title-only">Article could not be fetched — summary based on title only.</span>
+          </Show>
+          <Show when={props.stale}>
+            <button class="summary-retry" onClick={props.onRetry}>Regenerate for new verbosity</button>
+          </Show>
+        </div>
       </Show>
       <Show when={props.state === 'error'}>
         <span class="summary-error">{props.error}</span>

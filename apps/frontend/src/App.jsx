@@ -3,6 +3,7 @@ import { fetchTopStoriesForMonth } from './api/hn';
 import MonthPicker from './components/MonthPicker';
 import StoryRow from './components/StoryRow';
 import Loading from './components/Loading';
+import SettingsPanel from './components/SettingsPanel';
 
 function getDefaultMonth() {
   // Check URL hash first
@@ -13,15 +14,8 @@ function getDefaultMonth() {
       return { year: parseInt(match[1]), month: parseInt(match[2]) };
     }
   }
-  // Default to previous completed month
   const now = new Date();
-  let year = now.getFullYear();
-  let month = now.getMonth(); // 0-indexed, so this is "previous month" in 1-indexed
-  if (month === 0) {
-    month = 12;
-    year--;
-  }
-  return { year, month };
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
 }
 
 const STORIES_PER_PAGE = 30;
@@ -90,6 +84,7 @@ function App() {
           onMonthChange={setMonth}
           onYearChange={setYear}
         />
+        <SettingsPanel />
       </div>
 
       <Show when={loading()}>
