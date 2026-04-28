@@ -1,3 +1,6 @@
+import { createSignal } from 'solid-js';
+import SummaryPanel from './SummaryPanel';
+
 function extractDomain(url) {
   if (!url) return null;
   try {
@@ -24,6 +27,7 @@ function timeAgo(timestamp) {
 }
 
 export default function StoryRow(props) {
+  const [summaryOpen, setSummaryOpen] = createSignal(false);
   const domain = () => extractDomain(props.story.url);
   const hnUrl = () => `https://news.ycombinator.com/item?id=${props.story.objectID}`;
 
@@ -50,8 +54,16 @@ export default function StoryRow(props) {
         |{' '}
         <a href={hnUrl()} target="_blank" rel="noopener">
           {props.story.num_comments ?? 0} comments
-        </a>
+        </a>{' '}
+        |{' '}
+        <button
+          class={`summarise-btn${summaryOpen() ? ' active' : ''}`}
+          onClick={() => setSummaryOpen((v) => !v)}
+        >
+          {summaryOpen() ? 'hide summary' : 'summarise'}
+        </button>
       </div>
+      <SummaryPanel open={summaryOpen()} story={props.story} />
     </div>
   );
 }

@@ -169,6 +169,91 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Summarise button */
+.summarise-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  color: #828282;
+  text-decoration: none;
+}
+
+.summarise-btn:hover {
+  text-decoration: underline;
+}
+
+.summarise-btn.active {
+  color: #ff6600;
+}
+
+/* Summary panel */
+.summary-panel {
+  margin: 6px 0 8px 32px;
+  border: 1px solid #e6e6e0;
+  background: #fff;
+  font-size: 9pt;
+}
+
+.summary-tabs {
+  display: flex;
+  border-bottom: 1px solid #e6e6e0;
+}
+
+.summary-tab {
+  background: none;
+  border: none;
+  border-right: 1px solid #e6e6e0;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  color: #828282;
+}
+
+.summary-tab:hover {
+  background: #f6f6ef;
+}
+
+.summary-tab.active {
+  color: #000;
+  background: #f6f6ef;
+  font-weight: bold;
+}
+
+.summary-body {
+  padding: 10px 12px;
+  min-height: 48px;
+}
+
+.summary-text {
+  color: #333;
+  line-height: 1.5;
+}
+
+.summary-loading {
+  color: #828282;
+  font-style: italic;
+}
+
+.summary-error {
+  color: #c00;
+  margin-right: 8px;
+}
+
+.summary-retry {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  color: #828282;
+  text-decoration: underline;
+}
+
 /* Footer */
 .footer {
   border-top: 2px solid #ff6600;
