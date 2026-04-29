@@ -9,6 +9,7 @@ _Nothing currently in progress._
 
 ### Features
 
+- [ ] **Auth + user-supplied API keys** — basic auth (likely magic-link email or GitHub OAuth) so the app has a notion of users. Let logged-in users provide their own OpenAI key, stored encrypted server-side and used in place of the shared key for their requests. Removes the cost-per-summarise risk for the project owner. Probably requires a small DB (Postgres on Railway) to store users + encrypted keys.
 - [ ] **User leaderboards** — per-month leaderboards showing: top submitters by number of stories, top submitters by total points, and top commenters by number of comments. Data is all available from Algolia. Clicking a username could link to their HN profile.
 - [ ] **Q&A within summary panel** — a text input at the bottom of the summary accordion letting you ask follow-up questions to the LLM. Context includes both the article content (if fetched) and the comments. Maintains a short conversation history within the session so follow-up questions work naturally.
 - [ ] **Year view** — show all 12 months as a grid, each cell showing the #1 story for that month. Good entry point for browsing a whole year.
@@ -30,13 +31,14 @@ _Nothing currently in progress._
 
 ### Tech / Maintenance
 
-- [ ] **`npm audit fix` after dep bumps** — run after any package update; current audit is clean as of Apr 2026.
+- [ ] **Lock down CORS** — `CORS_ORIGIN` env var on Railway is currently unset, so the backend allows all origins. Set it to the Vercel URL only.
+- [ ] **Add Jina prod API key** — currently using free tier. Add `JINA_API_KEY` on Railway once the app gets meaningful traffic.
+- [ ] **Rate limiting on backend** — `/api/summarise/*` endpoints currently have no rate limit, so anyone hitting the Vercel URL could rack up OpenAI costs. Add a simple per-IP rate limiter (`@fastify/rate-limit`).
 - [ ] **Pin Node version** — add `.nvmrc` or `engines` field in `package.json` so the expected Node version is explicit.
 - [ ] **Extract `timeAgo` to a util** — currently lives in `StoryRow.jsx`; should be in `src/utils/` if any other component needs it.
-- [ ] **Remove `hashchange` listener leak** — `App.jsx:73` adds a global listener on every render without cleanup. Wrap in `onCleanup`.
-- [ ] **CI** — add a basic GitHub Actions workflow: `npm ci`, `npm run build`. No tests yet but at least catches broken builds.
-- [ ] **Push deployment live** — actually deploy: create Railway project, set env vars (OPENAI_API_KEY, JINA_API_KEY, CORS_ORIGIN), update Vercel root directory to `apps/frontend` and set `VITE_API_URL` to Railway URL. Smoke test summarise feature in prod.
-- [ ] **Deploy** — ship to Vercel / Netlify / GitHub Pages. Currently only runs locally. Blocked on backend proxy if the OpenAI key needs protecting.
+- [ ] **Remove `hashchange` listener leak** — adds a global listener on every render without cleanup. Wrap in `onCleanup`.
+- [ ] **CI** — add a basic GitHub Actions workflow: `yarn install`, `yarn build`. No tests yet but at least catches broken builds.
+- [ ] **Auto-deploy Railway from GitHub** — currently deploys via `railway up` (manual). Connect the GitHub repo in Railway dashboard so pushes trigger backend deploys, matching Vercel's behaviour for the frontend.
 
 ### Ideas / Maybe
 
@@ -61,3 +63,4 @@ _Nothing currently in progress._
 - [x] Migrated to Yarn workspaces monorepo with `apps/frontend` + `apps/server` (Apr 2026)
 - [x] Fastify backend proxy holding OpenAI/Jina keys server-side (Apr 2026)
 - [x] Railway deployment config (`railway.json`, `nixpacks.toml`) (Apr 2026)
+- [x] Backend deployed to Railway, frontend on Vercel — summarise working end to end in prod (Apr 2026)
