@@ -79,14 +79,14 @@ function App() {
       <div class="header">
         <span class="header-logo">Y</span>
         <span class="header-title">Hacker News Monthly Top</span>
-        <SettingsPanel />
-        <AuthPanel />
         <MonthPicker
           month={month()}
           year={year()}
           onMonthChange={setMonth}
           onYearChange={setYear}
         />
+        <SettingsPanel />
+        <AuthPanel />
       </div>
 
       <Show when={loading()}>
