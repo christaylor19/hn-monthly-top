@@ -120,6 +120,32 @@ export default function SettingsPanel() {
                   <div class="settings-key-error">{keyError()}</div>
                 </Show>
                 <div class="settings-hint">
+                  Summaries run on <em>your</em> OpenAI account, so you'll need your own API key:
+                  <ol class="settings-key-steps">
+                    <li>
+                      Create a key at{' '}
+                      <a
+                        href="https://platform.openai.com/api-keys"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        platform.openai.com/api-keys
+                      </a>
+                      .
+                    </li>
+                    <li>
+                      Add a little credit under{' '}
+                      <a
+                        href="https://platform.openai.com/settings/organization/billing/overview"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Billing
+                      </a>{' '}
+                      — a few dollars covers a lot of summaries.
+                    </li>
+                    <li>Paste the key above and hit Save.</li>
+                  </ol>
                   Your key is encrypted and stored server-side. It's never shown again after saving.
                 </div>
               </Show>
