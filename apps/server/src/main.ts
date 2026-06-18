@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { summariseArticle, summariseComments } from './summarise.js';
 import { requireAuth } from './auth.js';
 import { setUserKey, getUserKey, getUserKeyMeta, deleteUserKey } from './keys.js';
@@ -7,7 +8,10 @@ import { setUserKey, getUserKey, getUserKeyMeta, deleteUserKey } from './keys.js
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
-const app = Fastify({ logger: true });
+// trustProxy lets the rate limiter (and req.ip) read the real client IP from
+// X-Forwarded-For. On Railway every request arrives via the platform proxy, so
+// without this the limiter would bucket all users under one address.
+const app = Fastify({ logger: true, trustProxy: true });
 
 await app.register(cors, {
   origin: process.env.CORS_ORIGIN?.split(',') ?? true,
@@ -16,6 +20,19 @@ await app.register(cors, {
   // made the browser block the "remove key" request before it was sent.
   methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
 });
+
+// Per-IP rate limit. Generous global default; the summarise routes (which fan
+// out to OpenAI/Jina) tighten this via their own config.rateLimit below.
+await app.register(rateLimit, {
+  global: true,
+  max: 120,
+  timeWindow: '1 minute',
+});
+
+// Tighter limit shared by both summarise endpoints.
+const SUMMARISE_RATE_LIMIT = {
+  rateLimit: { max: 20, timeWindow: '1 minute' },
+};
 
 app.get('/health', async () => ({ ok: true }));
 
@@ -63,7 +80,7 @@ app.delete('/api/keys', { preHandler: requireAuth }, async (req, reply) => {
 
 app.post<{ Body: { title: string; url?: string; verbosity?: string } }>(
   '/api/summarise/article',
-  { preHandler: requireAuth },
+  { preHandler: requireAuth, config: SUMMARISE_RATE_LIMIT },
   async (req, reply) => {
     const { title, url, verbosity } = req.body ?? {};
     if (!title) return reply.status(400).send({ error: 'title is required' });
@@ -82,7 +99,7 @@ app.post<{ Body: { title: string; url?: string; verbosity?: string } }>(
 
 app.post<{
   Body: { title: string; comments: { author: string; text: string }[]; verbosity?: string };
-}>('/api/summarise/comments', { preHandler: requireAuth }, async (req, reply) => {
+}>('/api/summarise/comments', { preHandler: requireAuth, config: SUMMARISE_RATE_LIMIT }, async (req, reply) => {
   const { title, comments, verbosity } = req.body ?? {};
   if (!title || !Array.isArray(comments)) {
     return reply.status(400).send({ error: 'title and comments are required' });

@@ -1,55 +1,47 @@
-import { createSignal, createEffect, For, Show } from 'solid-js';
-import { fetchTopStoriesForMonth } from './api/hn';
+import { createSignal, createEffect, onMount, onCleanup, For, Show } from 'solid-js';
+import { fetchTopStories } from './api/hn';
+import { parsePeriodHash, periodToHash, periodLabel } from './utils/period';
 import MonthPicker from './components/MonthPicker';
 import StoryRow from './components/StoryRow';
 import Loading from './components/Loading';
 import SettingsPanel from './components/SettingsPanel';
 import AuthPanel from './components/AuthPanel';
 
-function getDefaultMonth() {
-  // Check URL hash first
-  const hash = window.location.hash.slice(1);
-  if (hash) {
-    const match = hash.match(/^(\d{4})-(\d{1,2})$/);
-    if (match) {
-      return { year: parseInt(match[1]), month: parseInt(match[2]) };
-    }
-  }
+function getDefaultPeriod() {
+  const fromHash = parsePeriodHash(window.location.hash);
+  if (fromHash) return fromHash;
   const now = new Date();
-  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  return { granularity: 'month', year: now.getFullYear(), month: now.getMonth() + 1 };
 }
 
 const STORIES_PER_PAGE = 30;
 
 function App() {
-  const defaults = getDefaultMonth();
-  const [year, setYear] = createSignal(defaults.year);
-  const [month, setMonth] = createSignal(defaults.month);
+  const [period, setPeriod] = createSignal(getDefaultPeriod());
   const [stories, setStories] = createSignal([]);
   const [loading, setLoading] = createSignal(false);
   const [error, setError] = createSignal(null);
   const [visibleCount, setVisibleCount] = createSignal(STORIES_PER_PAGE);
 
-  // Update hash when month/year changes
+  // Keep the hash in sync with the selected period.
   createEffect(() => {
-    const m = month();
-    const y = year();
-    window.location.hash = `${y}-${String(m).padStart(2, '0')}`;
+    window.location.hash = periodToHash(period());
   });
 
-  // Fetch stories when month/year changes
+  // Fetch stories whenever the period changes. Tracking period() makes this
+  // effect re-run on any granularity/year/month/week change.
   createEffect(() => {
-    const y = year();
-    const m = month();
+    const p = period();
     setLoading(true);
     setError(null);
     setStories([]);
     setVisibleCount(STORIES_PER_PAGE);
 
-    fetchTopStoriesForMonth(y, m)
+    fetchTopStories(p)
       .then((data) => {
         setStories(data);
         setLoading(false);
+        window.scrollTo({ top: 0 });
       })
       .catch((err) => {
         setError(err.message);
@@ -64,14 +56,15 @@ function App() {
     setVisibleCount((c) => c + STORIES_PER_PAGE);
   }
 
-  // Listen for hash changes (back/forward)
-  window.addEventListener('hashchange', () => {
-    const hash = window.location.hash.slice(1);
-    const match = hash.match(/^(\d{4})-(\d{1,2})$/);
-    if (match) {
-      setYear(parseInt(match[1]));
-      setMonth(parseInt(match[2]));
-    }
+  // Sync state from the hash on back/forward navigation. Registered once via
+  // onMount and torn down via onCleanup so we don't leak a listener per render.
+  onMount(() => {
+    const onHashChange = () => {
+      const parsed = parsePeriodHash(window.location.hash);
+      if (parsed) setPeriod(parsed);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    onCleanup(() => window.removeEventListener('hashchange', onHashChange));
   });
 
   return (
@@ -79,12 +72,7 @@ function App() {
       <div class="header">
         <span class="header-logo">Y</span>
         <span class="header-title">Hacker News Monthly Top</span>
-        <MonthPicker
-          month={month()}
-          year={year()}
-          onMonthChange={setMonth}
-          onYearChange={setYear}
-        />
+        <MonthPicker period={period()} onChange={setPeriod} />
         <SettingsPanel />
         <AuthPanel />
       </div>
@@ -98,7 +86,7 @@ function App() {
       </Show>
 
       <Show when={!loading() && !error() && stories().length === 0}>
-        <div class="empty">No stories found for this month.</div>
+        <div class="empty">No stories found for {periodLabel(period())}.</div>
       </Show>
 
       <Show when={!loading() && stories().length > 0}>

@@ -452,6 +452,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/rate-limit@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@fastify/rate-limit@npm:11.0.0"
+  dependencies:
+    "@lukeed/ms": "npm:^2.0.2"
+    fastify-plugin: "npm:^5.0.0"
+    toad-cache: "npm:^3.7.0"
+  checksum: 10c0/c918a7e85416954686bae73946dea197c33f2536726deb6bb9b551cac862f3a56b58d72cede932755a32ef3dc9a0a3d61b42976c227e21e9241baaebb1051b27
+  languageName: node
+  linkType: hard
+
 "@hn-monthly-top/frontend@workspace:apps/frontend":
   version: 0.0.0-use.local
   resolution: "@hn-monthly-top/frontend@workspace:apps/frontend"
@@ -469,6 +480,7 @@ __metadata:
   resolution: "@hn-monthly-top/server@workspace:apps/server"
   dependencies:
     "@fastify/cors": "npm:^11.1.0"
+    "@fastify/rate-limit": "npm:^11.0.0"
     "@supabase/supabase-js": "npm:^2.108.2"
     "@types/node": "npm:^22.10.0"
     fastify: "npm:^5.6.1"
@@ -528,6 +540,13 @@ __metadata:
     "@jridgewell/resolve-uri": "npm:^3.1.0"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
   checksum: 10c0/4b30ec8cd56c5fd9a661f088230af01e0c1a3888d11ffb6b47639700f71225be21d1f7e168048d6d4f9449207b978a235c07c8f15c07705685d16dc06280e9d9
+  languageName: node
+  linkType: hard
+
+"@lukeed/ms@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@lukeed/ms@npm:2.0.2"
+  checksum: 10c0/843b922717313bcde4943f478145d8bc13115b9b91d83bbaed53739b5644122984412310aed574792f4e6b492f2cbda178175f601856d310f67e14834c3f17a0
   languageName: node
   linkType: hard
 
