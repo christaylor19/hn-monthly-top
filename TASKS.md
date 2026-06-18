@@ -39,7 +39,8 @@
 - [ ] **Extract `timeAgo` to a util** — currently lives in `StoryRow.jsx`; should be in `src/utils/` if any other component needs it.
 - [ ] **Remove `hashchange` listener leak** — adds a global listener on every render without cleanup. Wrap in `onCleanup`.
 - [ ] **CI** — add a basic GitHub Actions workflow: `yarn install`, `yarn build`. No tests yet but at least catches broken builds.
-- [ ] **Auto-deploy Railway from GitHub** — currently deploys via `railway up` (manual). Connect the GitHub repo in Railway dashboard so pushes trigger backend deploys, matching Vercel's behaviour for the frontend.
+- [ ] **Auto-deploy Railway from GitHub** — currently deploys via `railway up` (manual). Connect the GitHub repo in Railway dashboard so pushes trigger backend deploys.
+- [ ] **Auto-deploy Vercel from GitHub** — the Vercel project has NO Git integration (confirmed via `vercel project inspect` — no connected repo). Pushes to `main` do not rebuild the frontend; every deploy is a manual `vercel --prod`. Connect the GitHub repo in the Vercel dashboard (Settings → Git) so pushes auto-deploy.
 
 ### Ideas / Maybe
 

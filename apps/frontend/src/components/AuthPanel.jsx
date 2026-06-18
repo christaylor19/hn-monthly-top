@@ -55,7 +55,7 @@ export default function AuthPanel() {
 
         <Show when={open() && !session()}>
           <div class="auth-panel">
-            <form onSubmit={submit}>
+            <form name="login" action="#" method="post" onSubmit={submit}>
               <input
                 type="email"
                 name="email"
