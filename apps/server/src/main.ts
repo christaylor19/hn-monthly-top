@@ -11,6 +11,10 @@ const app = Fastify({ logger: true });
 
 await app.register(cors, {
   origin: process.env.CORS_ORIGIN?.split(',') ?? true,
+  // Pin methods explicitly. Left unset, the preflight only advertises the
+  // methods derived at registration time, which silently dropped DELETE and
+  // made the browser block the "remove key" request before it was sent.
+  methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
 });
 
 app.get('/health', async () => ({ ok: true }));
