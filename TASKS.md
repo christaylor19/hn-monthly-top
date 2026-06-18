@@ -42,6 +42,7 @@ _(nothing active)_
 - [ ] **Compare two months** — side-by-side view of top stories from two different months.
 - [ ] **RSS/Atom feed** — generate a feed for a given month so people can subscribe.
 - [ ] **All-time leaderboard** — aggregate across all months to show the highest-scoring HN stories ever.
+- [ ] **Theme summarisation / trend tagging** — summarise the dominant themes of the stories on the current page (e.g. Crypto/Bitcoin would dominate older periods, AI more recently). Tag stories by topic and surface what's trending for the selected period, ideally trackable over time as a trend view.
 
 ---
 

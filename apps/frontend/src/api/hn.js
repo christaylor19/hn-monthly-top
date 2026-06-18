@@ -45,6 +45,25 @@ function getPeriodRange(period) {
   };
 }
 
+// ISO week number that "now" falls in, measured against the given year's
+// week-1 Monday. Used to default the week picker to the current week. Clamped
+// to the year's week count so a stale year can't produce an out-of-range week.
+export function currentIsoWeek(year) {
+  const now = new Date();
+  // Snap now to the Monday of its week (same logic as isoWeek1Monday).
+  const day = now.getDay() || 7;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  monday.setDate(monday.getDate() - (day - 1));
+
+  const week1 = isoWeek1Monday(year);
+  // Round the day-diff before dividing by 7: a DST change between week1 and now
+  // makes the raw ms span 167.96 (not 168) days, which would floor to the wrong
+  // week. Rounding to whole days absorbs the ±1h shift.
+  const days = Math.round((monday - week1) / 86400000);
+  const weeks = Math.floor(days / 7) + 1;
+  return Math.min(Math.max(weeks, 1), isoWeeksInYear(year));
+}
+
 // Number of ISO weeks in a year (52 or 53) — a year has 53 weeks when it
 // starts on a Thursday, or is a leap year starting on a Wednesday.
 export function isoWeeksInYear(year) {

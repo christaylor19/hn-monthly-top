@@ -1,5 +1,5 @@
 import { Show } from 'solid-js';
-import { isoWeeksInYear } from '../api/hn';
+import { isoWeeksInYear, currentIsoWeek } from '../api/hn';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -31,7 +31,7 @@ export default function MonthPicker(props) {
   function changeGranularity(granularity) {
     const next = { granularity, year: period().year };
     if (granularity === 'month') next.month = period().month ?? now.getMonth() + 1;
-    if (granularity === 'week') next.week = period().week ?? 1;
+    if (granularity === 'week') next.week = period().week ?? currentIsoWeek(next.year);
     props.onChange(next);
   }
 
