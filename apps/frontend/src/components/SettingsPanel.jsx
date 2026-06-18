@@ -109,6 +109,8 @@ export default function SettingsPanel() {
                     onInput={(e) => setKeyInput(e.target.value)}
                     class="settings-key-input"
                     autocomplete="off"
+                    data-1p-ignore
+                    data-lpignore="true"
                   />
                   <button type="submit" class="settings-key-save" disabled={keyBusy() || !keyInput()}>
                     {keyBusy() ? '…' : 'Save'}
