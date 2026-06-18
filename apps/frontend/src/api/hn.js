@@ -16,7 +16,7 @@ export async function fetchTopStoriesForMonth(year, month, minPoints = 50) {
   const maxPages = 10; // cap at 1000 results
 
   while (page < maxPages) {
-    const filters = `created_at_i>${start},created_at_i<${end},points>${minPoints}`;
+    const filters = `created_at_i>${start},created_at_i<${end}`;
     const url = `${BASE_URL}?tags=story&numericFilters=${encodeURIComponent(filters)}&hitsPerPage=100&page=${page}`;
     const res = await fetch(url);
 
@@ -31,11 +31,13 @@ export async function fetchTopStoriesForMonth(year, month, minPoints = 50) {
     page++;
   }
 
+  const filtered = stories.filter((s) => (s.points ?? 0) >= minPoints);
+
   // If too many results, retry with higher threshold
-  if (stories.length > 900 && minPoints < 200) {
+  if (filtered.length > 900 && minPoints < 200) {
     return fetchTopStoriesForMonth(year, month, minPoints * 2);
   }
 
-  stories.sort((a, b) => b.points - a.points);
-  return stories;
+  filtered.sort((a, b) => b.points - a.points);
+  return filtered;
 }
