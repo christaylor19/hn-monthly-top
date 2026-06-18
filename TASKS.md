@@ -1,7 +1,8 @@
 # HN Monthly Top — Tasks
 
 ## In Progress
-_Nothing currently in progress._
+
+- [ ] **Auth + user-supplied API keys** — built (Supabase auth, AES-256-GCM-encrypted per-user OpenAI keys, summariser gated behind login + own key). Code merged. **Remaining:** add `VITE_*` env vars on Vercel + redeploy, then verify the live flow. See `docs/api-keys.md`.
 
 ---
 
@@ -9,7 +10,6 @@ _Nothing currently in progress._
 
 ### Features
 
-- [ ] **Auth + user-supplied API keys** — basic auth (likely magic-link email or GitHub OAuth) so the app has a notion of users. Let logged-in users provide their own OpenAI key, stored encrypted server-side and used in place of the shared key for their requests. Removes the cost-per-summarise risk for the project owner. Probably requires a small DB (Postgres on Railway) to store users + encrypted keys.
 - [ ] **User leaderboards** — per-month leaderboards showing: top submitters by number of stories, top submitters by total points, and top commenters by number of comments. Data is all available from Algolia. Clicking a username could link to their HN profile.
 - [ ] **Q&A within summary panel** — a text input at the bottom of the summary accordion letting you ask follow-up questions to the LLM. Context includes both the article content (if fetched) and the comments. Maintains a short conversation history within the session so follow-up questions work naturally.
 - [ ] **Year view** — show all 12 months as a grid, each cell showing the #1 story for that month. Good entry point for browsing a whole year.
@@ -31,6 +31,7 @@ _Nothing currently in progress._
 
 ### Tech / Maintenance
 
+- [ ] **Migrate frontend to TypeScript** — the server (`apps/server`) is fully TS, but `apps/frontend` is all JS/JSX (6 `.js` + 8 `.jsx`, no tsconfig). Convert `.js`→`.ts` and `.jsx`→`.tsx`, add `tsconfig.json` + `tsconfig.node.json`, ensure `vite-plugin-solid` handles TS, and type the Solid signals + Supabase client. Do as one focused pass and re-verify `yarn build`. Lower-risk to do after auth is verified live. Files added this session that are currently JS: `store/auth.js`, `api/keys.js`, `api/summarise.js`, `api/hn.js`, `api/comments.js`, `store/settings.js`, plus all `.jsx` components.
 - [ ] **Lock down CORS** — `CORS_ORIGIN` env var on Railway is currently unset, so the backend allows all origins. Set it to the Vercel URL only.
 - [ ] **Add Jina prod API key** — currently using free tier. Add `JINA_API_KEY` on Railway once the app gets meaningful traffic.
 - [ ] **Rate limiting on backend** — `/api/summarise/*` endpoints currently have no rate limit, so anyone hitting the Vercel URL could rack up OpenAI costs. Add a simple per-IP rate limiter (`@fastify/rate-limit`).
