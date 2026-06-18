@@ -154,6 +154,11 @@ max_indexes = 5
 
 [auth]
 enabled = true
+# NOTE: these auth URLs apply to the LOCAL `supabase start` stack only. The
+# PRODUCTION Site URL + redirect allow-list live in the dashboard
+# (Authentication -> URL Configuration), NOT here. Do not `supabase config
+# push` these — it would also overwrite prod's email-confirmation setting.
+# Prod Site URL: https://hn-monthly-top.vercel.app
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
 site_url = "http://127.0.0.1:3000"
