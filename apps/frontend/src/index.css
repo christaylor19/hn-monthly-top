@@ -239,6 +239,136 @@ a:hover {
   font-weight: bold;
 }
 
+/* API key field (in settings panel) */
+.settings-row + .settings-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0eb;
+}
+
+.settings-hint {
+  font-size: 7.5pt;
+  color: #828282;
+  line-height: 1.4;
+}
+
+.settings-key-current {
+  font-size: 8pt;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-key-current code {
+  background: #f6f6ef;
+  padding: 1px 4px;
+}
+
+.settings-key-form {
+  display: flex;
+  gap: 4px;
+}
+
+.settings-key-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #e6e6e0;
+  padding: 3px 5px;
+  font-family: monospace;
+  font-size: 8pt;
+}
+
+.settings-key-save,
+.settings-key-remove,
+.auth-submit,
+.auth-toggle {
+  background: none;
+  border: 1px solid #e6e6e0;
+  cursor: pointer;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  padding: 3px 8px;
+  color: #000;
+}
+
+.settings-key-save:disabled,
+.auth-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.settings-key-remove {
+  border: none;
+  color: #828282;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.settings-key-error,
+.auth-error {
+  color: #c00;
+  font-size: 8pt;
+}
+
+.auth-info {
+  color: #ff6600;
+  font-size: 8pt;
+}
+
+/* Auth panel (header) */
+.auth-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.auth-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  color: #000;
+  opacity: 0.7;
+}
+
+.auth-btn:hover {
+  opacity: 1;
+}
+
+.auth-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #e6e6e0;
+  padding: 10px 14px;
+  min-width: 200px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-input {
+  border: 1px solid #e6e6e0;
+  padding: 4px 6px;
+  font-size: 9pt;
+}
+
+.auth-toggle {
+  border: none;
+  color: #828282;
+  text-decoration: underline;
+  padding: 0;
+  text-align: left;
+}
+
 /* Summarise button */
 .summarise-btn {
   background: none;

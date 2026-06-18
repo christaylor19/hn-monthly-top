@@ -4,6 +4,7 @@ import MonthPicker from './components/MonthPicker';
 import StoryRow from './components/StoryRow';
 import Loading from './components/Loading';
 import SettingsPanel from './components/SettingsPanel';
+import AuthPanel from './components/AuthPanel';
 
 function getDefaultMonth() {
   // Check URL hash first
@@ -85,6 +86,7 @@ function App() {
           onYearChange={setYear}
         />
         <SettingsPanel />
+        <AuthPanel />
       </div>
 
       <Show when={loading()}>

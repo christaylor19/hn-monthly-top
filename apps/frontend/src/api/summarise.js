@@ -1,11 +1,18 @@
 import { verbosity } from '../store/settings';
+import { accessToken } from '../store/auth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 async function postJson(path, body) {
+  const token = accessToken();
+  if (!token) throw new Error('Log in and add your OpenAI key in settings to summarise.');
+
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

@@ -1,4 +1,3 @@
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 const JINA_API_KEY = process.env.JINA_API_KEY;
 
@@ -17,14 +16,12 @@ function resolveVerbosity(v: string | undefined): Verbosity {
   return v && v in VERBOSITY ? (v as Verbosity) : 'balanced';
 }
 
-async function callOpenAI(systemPrompt: string, userContent: string): Promise<string> {
-  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured on the server.');
-
+async function callOpenAI(apiKey: string, systemPrompt: string, userContent: string): Promise<string> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
@@ -63,6 +60,7 @@ async function fetchArticleContent(url: string): Promise<string | null> {
 }
 
 export async function summariseArticle(
+  apiKey: string,
   title: string,
   url: string | undefined,
   verbosity: string | undefined
@@ -81,11 +79,12 @@ No filler phrases like "the article discusses" or "in conclusion". Be direct and
     ? `Title: ${title}\n\nContent:\n${articleContent}`
     : `Title: ${title}\n\n(Article content could not be fetched — summarise based on the title only.)`;
 
-  const text = await callOpenAI(system, user);
+  const text = await callOpenAI(apiKey, system, user);
   return { text, titleOnly: !articleContent };
 }
 
 export async function summariseComments(
+  apiKey: string,
   title: string,
   comments: { author: string; text: string }[],
   verbosity: string | undefined
@@ -107,5 +106,5 @@ Length: ${VERBOSITY[v].comments}. Be direct. No filler.`;
 
   const user = `Story: "${title}"\n\nComments:\n${formatted}`;
 
-  return callOpenAI(system, user);
+  return callOpenAI(apiKey, system, user);
 }
