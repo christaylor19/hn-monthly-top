@@ -41,7 +41,7 @@ _(nothing active)_
 - [ ] **Remove `hashchange` listener leak** — adds a global listener on every render without cleanup. Wrap in `onCleanup`.
 - [ ] **CI** — add a basic GitHub Actions workflow: `yarn install`, `yarn build`. No tests yet but at least catches broken builds.
 - [ ] **Auto-deploy Railway from GitHub** — currently deploys via `railway up` (manual). Connect the GitHub repo in Railway dashboard so pushes trigger backend deploys.
-- [ ] **Auto-deploy Vercel from GitHub** — the Vercel project has NO Git integration (confirmed via `vercel project inspect` — no connected repo). Pushes to `main` do not rebuild the frontend; every deploy is a manual `vercel --prod`. Connect the GitHub repo in the Vercel dashboard (Settings → Git) so pushes auto-deploy.
+- [x] **Auto-deploy Vercel from GitHub** — DONE/already working. Git integration has been connected since Feb 26 (Settings → Git, `christaylor19/hn-monthly-top`, production branch `main`). Pushes to `main` auto-deploy to prod; verified empirically — a push produced a deployment with the `hn-monthly-top-git-main-…` alias (the unforgeable git-trigger tell) without any `vercel --prod`. Earlier "no integration" notes were wrong: manual `vercel --prod` runs were layered on top and masked the auto-deploys in `vercel ls` (all showed `username: ctay`).
 
 ### Ideas / Maybe
 
