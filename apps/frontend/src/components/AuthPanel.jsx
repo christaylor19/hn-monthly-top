@@ -58,7 +58,10 @@ export default function AuthPanel() {
             <form onSubmit={submit}>
               <input
                 type="email"
+                name="email"
+                id="auth-email"
                 placeholder="email"
+                autocomplete="email"
                 value={email()}
                 onInput={(e) => setEmail(e.target.value)}
                 required
@@ -66,7 +69,10 @@ export default function AuthPanel() {
               />
               <input
                 type="password"
+                name="password"
+                id="auth-password"
                 placeholder="password"
+                autocomplete={mode() === 'signup' ? 'new-password' : 'current-password'}
                 value={password()}
                 onInput={(e) => setPassword(e.target.value)}
                 required
