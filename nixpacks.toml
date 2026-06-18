@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["nodejs_22"]
-
-[phases.install]
-cmds = ["corepack enable && corepack prepare yarn@4.10.3 --activate && yarn install"]
-
-[start]
-cmd = "yarn start:server"
