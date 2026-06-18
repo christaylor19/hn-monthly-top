@@ -2,11 +2,22 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 const JINA_API_KEY = process.env.JINA_API_KEY;
 
 const VERBOSITY = {
-  concise: { article: '1 sentence summary and 2-3 bullet points', comments: '2-3 sentences total' },
-  balanced: { article: '1 sentence summary and 3-5 bullet points', comments: '3-5 sentences total' },
+  concise: {
+    article: 'a single tight sentence, then 2-3 short bullet points covering only the core point',
+    comments: 'a 2-3 sentence digest of the overall sentiment',
+    maxTokens: 400,
+  },
+  balanced: {
+    article: 'a 2-3 sentence overview, then 4-6 bullet points covering the main arguments and any notable details',
+    comments: 'a 4-6 sentence summary covering the main themes and any disagreement',
+    maxTokens: 800,
+  },
   detailed: {
-    article: '2-3 sentence summary and 5-7 bullet points with extra context',
-    comments: '5-7 sentences with expanded detail',
+    article:
+      'a thorough 4-6 sentence overview, then 8-12 bullet points covering the full argument, supporting evidence, caveats, and context. Do not omit substantive points for brevity — be comprehensive.',
+    comments:
+      'a thorough multi-paragraph summary (at least 8-10 sentences) covering the main themes, the strongest arguments on each side, notable disagreements, and any standout insights or anecdotes',
+    maxTokens: 1600,
   },
 } as const;
 
@@ -16,7 +27,12 @@ function resolveVerbosity(v: string | undefined): Verbosity {
   return v && v in VERBOSITY ? (v as Verbosity) : 'balanced';
 }
 
-async function callOpenAI(apiKey: string, systemPrompt: string, userContent: string): Promise<string> {
+async function callOpenAI(
+  apiKey: string,
+  systemPrompt: string,
+  userContent: string,
+  maxTokens: number
+): Promise<string> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -29,7 +45,7 @@ async function callOpenAI(apiKey: string, systemPrompt: string, userContent: str
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      max_tokens: 600,
+      max_tokens: maxTokens,
       temperature: 0.4,
     }),
   });
@@ -79,7 +95,7 @@ No filler phrases like "the article discusses" or "in conclusion". Be direct and
     ? `Title: ${title}\n\nContent:\n${articleContent}`
     : `Title: ${title}\n\n(Article content could not be fetched — summarise based on the title only.)`;
 
-  const text = await callOpenAI(apiKey, system, user);
+  const text = await callOpenAI(apiKey, system, user, VERBOSITY[v].maxTokens);
   return { text, titleOnly: !articleContent };
 }
 
@@ -106,5 +122,5 @@ Length: ${VERBOSITY[v].comments}. Be direct. No filler.`;
 
   const user = `Story: "${title}"\n\nComments:\n${formatted}`;
 
-  return callOpenAI(apiKey, system, user);
+  return callOpenAI(apiKey, system, user, VERBOSITY[v].maxTokens);
 }
