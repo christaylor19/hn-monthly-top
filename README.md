@@ -54,6 +54,8 @@ VITE_SUPABASE_ANON_KEY=       # safe to expose
 
 `railway.json` at the repo root configures Railway (Railpack builder) to install with Yarn 4 and run `yarn start:server`. Set the env vars from `apps/server/.env.example` in Railway.
 
+The service is connected to GitHub (`christaylor19/hn-monthly-top`, branch `main`), so **pushes to `main` auto-deploy the backend** — no manual step. A manual `railway up --detach` from the repo root still works as a fallback.
+
 ### Frontend (Vercel)
 
 Build config lives in `vercel.json` at the repo root. Just set the env var in Vercel:
