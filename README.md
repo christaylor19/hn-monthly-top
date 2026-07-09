@@ -60,3 +60,9 @@ Build config lives in `vercel.json` at the repo root. Just set the env var in Ve
 - `VITE_API_URL` = Railway backend URL
 
 If your Vercel project was previously configured with a custom root directory, clear that in Settings → General so the dashboard config doesn't override `vercel.json`.
+
+## Monitoring usage
+
+Visitor numbers (Vercel Web Analytics) and summaries-served counts (Railway
+logs) — how to enable and read both — are documented in
+[docs/monitoring.md](docs/monitoring.md).

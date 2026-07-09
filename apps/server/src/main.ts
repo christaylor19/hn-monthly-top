@@ -89,6 +89,12 @@ app.post<{ Body: { title: string; url?: string; verbosity?: string } }>(
       const key = await getUserKey(req.userId!);
       if (!key) return reply.status(403).send({ error: NO_KEY_MSG });
       const result = await summariseArticle(key, title, url, verbosity);
+      // Usage signal: one line per served summary. userId lets us count
+      // distinct users; titleOnly tells us how often Jina fetch failed.
+      req.log.info(
+        { evt: 'summarise', kind: 'article', verbosity: verbosity ?? 'balanced', userId: req.userId, titleOnly: result.titleOnly },
+        'summarise'
+      );
       return result;
     } catch (e) {
       req.log.error(e);
@@ -109,6 +115,10 @@ app.post<{
     const key = await getUserKey(req.userId!);
     if (!key) return reply.status(403).send({ error: NO_KEY_MSG });
     const text = await summariseComments(key, title, comments, verbosity);
+    req.log.info(
+      { evt: 'summarise', kind: 'comments', verbosity: verbosity ?? 'balanced', userId: req.userId },
+      'summarise'
+    );
     return { text };
   } catch (e) {
     req.log.error(e);

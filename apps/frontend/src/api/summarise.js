@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics';
 import { verbosity } from '../store/settings';
 import { accessToken } from '../store/auth';
 
@@ -23,6 +24,7 @@ async function postJson(path, body) {
 }
 
 export async function summariseArticle(title, url) {
+  track('summarise', { kind: 'article', verbosity: verbosity().value });
   return postJson('/api/summarise/article', {
     title,
     url,
@@ -32,6 +34,7 @@ export async function summariseArticle(title, url) {
 
 export async function summariseComments(title, comments) {
   if (!comments.length) throw new Error('No comments to summarise.');
+  track('summarise', { kind: 'comments', verbosity: verbosity().value });
   const { text } = await postJson('/api/summarise/comments', {
     title,
     comments: comments.map((c) => ({ author: c.author, text: c.text })),
