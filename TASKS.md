@@ -23,7 +23,7 @@ _(nothing active)_
 
 ### Accounts
 
-- [x] **Password reset** — DONE (Nov 2026). Better Auth `sendResetPassword` through Resend, "Forgot password?" and the reset form in `AuthPanel`, sessions revoked on reset. Off until `RESEND_API_KEY` and `EMAIL_FROM` are set on Railway (`passwordResetEnabled` on `GET /api/auth-config`).
+- [x] **Password reset** — DONE (Nov 2026). Better Auth `sendResetPassword` through Resend, "Forgot password?" and the reset form in `AuthPanel`, sessions revoked on reset, then signed straight back in with a fresh session; the reset form shows the account email (read-only, `autocomplete="username"`) from `POST /api/password-reset/email` so 1Password updates the existing login. Off until `RESEND_API_KEY` and `EMAIL_FROM` are set on Railway (`passwordResetEnabled` on `GET /api/auth-config`).
 - [ ] **Email verification** — `requireEmailVerification` and `sendVerificationEmail` through the Resend sender in `apps/server/src/lib/email.ts`, so accounts can't be made with someone else's address.
 
 ### UX / Polish
@@ -69,6 +69,7 @@ _(nothing active)_
 - [x] Backend deployed to Railway, frontend on Vercel — summarise working end to end in prod (Apr 2026)
 - [x] **Auth + user-supplied API keys** (Jun 2026) — Supabase email/password auth, AES-256-GCM-encrypted per-user OpenAI keys stored server-side, summariser gated behind login + own key (zero owner spend). Verified end to end in prod: signup → save key → summarise. See `docs/api-keys.md`.
 - [x] Fixed Algolia `points` numericFilter 400 — moved threshold to client-side filter (Jun 2026)
+- [x] Mobile header: settings cog and Log in wrap together on the right, so the auth panel no longer runs off the left edge at 375px (Nov 2026)
 - [x] Password-manager support on login form — added `name`/`id`/`autocomplete`, plus `action`/`method`/`name` on the `<form>` so 1Password detects it; `data-1p-ignore` on the key field so it stops offering to save the OpenAI key as a login (Jun 2026)
 - [x] Fixed CORS blocking `DELETE /api/keys` — preflight only advertised `GET,HEAD,POST`; pinned `methods` explicitly so "remove key" works (Jun 2026)
 - [x] Made verbosity levels meaningfully distinct — widened per-level prompts and gave each its own `max_tokens` (400/800/1600); previously all capped at 600 so Detailed couldn't be longer (Jun 2026)

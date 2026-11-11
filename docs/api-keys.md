@@ -121,16 +121,32 @@ rejects every send. A failed send is logged as `password reset email failed`.
 email link ───────────────────▶ GET /api/auth/reset-password/<token> (via Vercel)
                                 token valid   → 302 to /?token=<token>
                                 token invalid → 302 to /?error=INVALID_TOKEN
-SPA reads ?token, clears it ──▶ new password + confirm
+SPA reads ?token, clears it ──▶ POST /api/password-reset/email { token }
+                                token valid   → { email }
+                                anything else → 404 INVALID_TOKEN
+form: email (read-only) ──────▶ new password + confirm
                               ▶ POST /api/auth/reset-password
                                 password changed, token used up,
                                 every session for the user deleted
-"Password changed. Log in with your new password."
+                              ▶ POST /api/auth/sign-in/email (email + new password)
+                                fresh session cookie
+"Password changed. You're signed in."
 ```
 
 The link lasts one hour and works once. Because the SPA is hash-routed, the
 token comes back as a query string on `/`, which `AuthPanel` reads and removes
 from the address bar.
+
+The reset form shows the account's email in a read-only
+`autocomplete="username"` field, so password managers such as 1Password update
+the existing login instead of saving a new one. `POST /api/password-reset/email`
+looks the token up without using it up, and returns the same 404 for a missing,
+malformed, expired or used token, so it can't be used to find accounts. It is
+limited to 10 requests a minute per IP.
+
+After the reset every old session is still revoked; the SPA then signs in with
+the email and the new password to get a fresh session. If that sign-in fails,
+the panel falls back to "Password changed. Log in with your new password."
 
 To test locally without sending real email, point the Resend SDK at a stub
 server with `RESEND_BASE_URL=http://127.0.0.1:<port>` and read the reset link
