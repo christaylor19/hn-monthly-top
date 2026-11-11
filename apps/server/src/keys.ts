@@ -43,7 +43,10 @@ function getClient() {
   return client;
 }
 
-export async function setUserKey(userId: string, plaintextKey: string): Promise<{ lastFour: string }> {
+export async function setUserKey(
+  userId: string,
+  plaintextKey: string,
+): Promise<{ lastFour: string }> {
   const trimmed = plaintextKey.trim();
   if (!trimmed.startsWith('sk-')) {
     throw new Error('That does not look like an OpenAI key (expected to start with "sk-").');
@@ -59,7 +62,9 @@ export async function setUserKey(userId: string, plaintextKey: string): Promise<
     updated_at: new Date().toISOString(),
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped client infers never[] for upsert without generated DB types
-  const { error } = await getClient().from('user_api_keys').upsert(row as any);
+  const { error } = await getClient()
+    .from('user_api_keys')
+    .upsert(row as any);
 
   if (error) throw new Error(`Failed to store key: ${error.message}`);
   return { lastFour };

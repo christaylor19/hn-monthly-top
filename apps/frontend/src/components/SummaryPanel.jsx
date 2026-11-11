@@ -116,16 +116,22 @@ function SummaryContent(props) {
         <div class="summary-text" innerHTML={marked.parse(props.text)} />
         <div class="summary-footer">
           <Show when={props.titleOnly}>
-            <span class="summary-title-only">Article could not be fetched — summary based on title only.</span>
+            <span class="summary-title-only">
+              Article could not be fetched — summary based on title only.
+            </span>
           </Show>
           <Show when={props.stale}>
-            <button class="summary-retry" onClick={props.onRetry}>Regenerate for new verbosity</button>
+            <button class="summary-retry" onClick={props.onRetry}>
+              Regenerate for new verbosity
+            </button>
           </Show>
         </div>
       </Show>
       <Show when={props.state === 'error'}>
         <span class="summary-error">{props.error}</span>
-        <button class="summary-retry" onClick={props.onRetry}>Retry</button>
+        <button class="summary-retry" onClick={props.onRetry}>
+          Retry
+        </button>
       </Show>
     </>
   );

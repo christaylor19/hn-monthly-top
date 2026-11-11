@@ -8,7 +8,7 @@ number is ground-truth for the feature that matters.
 
 ## Frontend — Vercel Web Analytics (visitors)
 
-Answers *how many people visited*. Cookieless, no consent banner needed.
+Answers _how many people visited_. Cookieless, no consent banner needed.
 
 - **Wiring:** `inject()` is called once at app boot in
   `apps/frontend/src/index.jsx`. There is no Solid-specific binding, so we use
@@ -20,7 +20,7 @@ Answers *how many people visited*. Cookieless, no consent banner needed.
 - **Caveats:**
   - This is a hash-routed SPA, so pageviews are a coarse "visits" signal, not
     per-view routing detail.
-  - **Custom events are Pro-only** ($20/mo). We *do* fire
+  - **Custom events are Pro-only** ($20/mo). We _do_ fire
     `track('summarise', { kind, verbosity })` in `apps/frontend/src/api/summarise.js`,
     but on Hobby those calls are silently dropped — they light up only if the
     project is upgraded to Pro. They are harmless no-ops otherwise, so they stay
@@ -30,7 +30,7 @@ Answers *how many people visited*. Cookieless, no consent banner needed.
 
 ## Backend — Railway logs (summaries served)
 
-Answers *how many summaries were served, to how many distinct people* — the real
+Answers _how many summaries were served, to how many distinct people_ — the real
 "is the feature landing" question. Server-side, so no ad-blocker gap and no
 paywall.
 
@@ -41,10 +41,10 @@ Both summarise routes in `apps/server/src/main.ts` emit one structured
 ```json
 {
   "evt": "summarise",
-  "kind": "article",        // or "comments"
-  "verbosity": "detailed",  // concise | balanced | detailed
-  "userId": "a1b2c3d4-...",  // Supabase user id
-  "titleOnly": false,        // article only: true = Jina content fetch failed
+  "kind": "article", // or "comments"
+  "verbosity": "detailed", // concise | balanced | detailed
+  "userId": "a1b2c3d4-...", // Supabase user id
+  "titleOnly": false, // article only: true = Jina content fetch failed
   "msg": "summarise"
 }
 ```
@@ -60,14 +60,14 @@ filter and group on them.
 
 ### What each field gives you
 
-| Question | How |
-|---|---|
-| How many summaries served? | count of `evt:"summarise"` lines |
-| **How many distinct people?** | count of **unique `userId`** values |
-| Repeat use or one-and-done? | summaries ÷ distinct users |
-| Article vs comments? | group by `kind` |
-| Does anyone touch the verbosity slider? | group by `verbosity` (all `balanced` = nobody found it) |
-| Is free-tier Jina failing? | ratio of `titleOnly:true` (high → add prod `JINA_API_KEY`) |
+| Question                                | How                                                        |
+| --------------------------------------- | ---------------------------------------------------------- |
+| How many summaries served?              | count of `evt:"summarise"` lines                           |
+| **How many distinct people?**           | count of **unique `userId`** values                        |
+| Repeat use or one-and-done?             | summaries ÷ distinct users                                 |
+| Article vs comments?                    | group by `kind`                                            |
+| Does anyone touch the verbosity slider? | group by `verbosity` (all `balanced` = nobody found it)    |
+| Is free-tier Jina failing?              | ratio of `titleOnly:true` (high → add prod `JINA_API_KEY`) |
 
 The distinct-`userId` count is the "N people have used the summariser" number.
 

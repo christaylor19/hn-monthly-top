@@ -63,7 +63,7 @@ app.post<{ Body: { apiKey?: string } }>(
       req.log.error(e);
       return reply.status(400).send({ error: (e as Error).message });
     }
-  }
+  },
 );
 
 app.delete('/api/keys', { preHandler: requireAuth }, async (req, reply) => {
@@ -92,39 +92,54 @@ app.post<{ Body: { title: string; url?: string; verbosity?: string } }>(
       // Usage signal: one line per served summary. userId lets us count
       // distinct users; titleOnly tells us how often Jina fetch failed.
       req.log.info(
-        { evt: 'summarise', kind: 'article', verbosity: verbosity ?? 'balanced', userId: req.userId, titleOnly: result.titleOnly },
-        'summarise'
+        {
+          evt: 'summarise',
+          kind: 'article',
+          verbosity: verbosity ?? 'balanced',
+          userId: req.userId,
+          titleOnly: result.titleOnly,
+        },
+        'summarise',
       );
       return result;
     } catch (e) {
       req.log.error(e);
       return reply.status(500).send({ error: (e as Error).message });
     }
-  }
+  },
 );
 
 app.post<{
   Body: { title: string; comments: { author: string; text: string }[]; verbosity?: string };
-}>('/api/summarise/comments', { preHandler: requireAuth, config: SUMMARISE_RATE_LIMIT }, async (req, reply) => {
-  const { title, comments, verbosity } = req.body ?? {};
-  if (!title || !Array.isArray(comments)) {
-    return reply.status(400).send({ error: 'title and comments are required' });
-  }
+}>(
+  '/api/summarise/comments',
+  { preHandler: requireAuth, config: SUMMARISE_RATE_LIMIT },
+  async (req, reply) => {
+    const { title, comments, verbosity } = req.body ?? {};
+    if (!title || !Array.isArray(comments)) {
+      return reply.status(400).send({ error: 'title and comments are required' });
+    }
 
-  try {
-    const key = await getUserKey(req.userId!);
-    if (!key) return reply.status(403).send({ error: NO_KEY_MSG });
-    const text = await summariseComments(key, title, comments, verbosity);
-    req.log.info(
-      { evt: 'summarise', kind: 'comments', verbosity: verbosity ?? 'balanced', userId: req.userId },
-      'summarise'
-    );
-    return { text };
-  } catch (e) {
-    req.log.error(e);
-    return reply.status(500).send({ error: (e as Error).message });
-  }
-});
+    try {
+      const key = await getUserKey(req.userId!);
+      if (!key) return reply.status(403).send({ error: NO_KEY_MSG });
+      const text = await summariseComments(key, title, comments, verbosity);
+      req.log.info(
+        {
+          evt: 'summarise',
+          kind: 'comments',
+          verbosity: verbosity ?? 'balanced',
+          userId: req.userId,
+        },
+        'summarise',
+      );
+      return { text };
+    } catch (e) {
+      req.log.error(e);
+      return reply.status(500).send({ error: (e as Error).message });
+    }
+  },
+);
 
 try {
   await app.listen({ port: PORT, host: HOST });

@@ -1,11 +1,5 @@
 import { createSignal, Show } from 'solid-js';
-import {
-  session,
-  isConfigured,
-  signInWithEmail,
-  signUpWithEmail,
-  signOut,
-} from '../store/auth';
+import { session, isConfigured, signInWithEmail, signUpWithEmail, signOut } from '../store/auth';
 
 export default function AuthPanel() {
   const [open, setOpen] = createSignal(false);
