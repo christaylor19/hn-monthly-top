@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **Move auth + DB off Supabase** (Nov 2026) — Better Auth (email/password, cookie sessions) on Drizzle + Railway Postgres; Vercel rewrites `/api/*` to Railway with an `x-origin-secret` header so cookies are first-party. PR open, not merged: Chris applies `.railway/railway.ts` (adds Postgres + pre-deploy migrate) and sets the env vars first, then merges, signs up again and re-enters his OpenAI key. Then: turn off `AUTH_SIGNUP_ENABLED`, delete the Supabase project and remove the old `SUPABASE_*`, `CORS_ORIGIN` and `VITE_*` env vars.
+- [ ] **Finish the Supabase retirement** — auth and DB moved to Better Auth on Railway Postgres (PR #2, live 2026-11-11, verified: sign-up, session IP, scrypt hashes). Left: remove `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CORS_ORIGIN` on Railway and `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` on Vercel, then delete the Supabase project. Public sign-up stays on.
 
 ---
 
@@ -20,6 +20,11 @@
 - [ ] **"Copy link" button** — one-click copy of the shareable hash URL for the current month.
 - [ ] **Comment count threshold filter** — alongside the points filter, allow filtering by minimum comment count.
 - [ ] **Dark mode** — respect `prefers-color-scheme`, toggle override stored in `localStorage`.
+
+### Accounts
+
+- [ ] **Password reset** — sign-up is public, so real users will forget passwords. Better Auth's `sendResetPassword` needs an email sender (Resend or similar); add the reset request + reset form to `AuthPanel`.
+- [ ] **Email verification** — `requireEmailVerification` once an email sender exists, so accounts can't be made with someone else's address.
 
 ### UX / Polish
 

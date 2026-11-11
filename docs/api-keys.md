@@ -77,7 +77,7 @@ after a schema change) and run in Railway's pre-deploy step
 DATABASE_URL=${{Postgres.DATABASE_URL}}        # reference variable
 BETTER_AUTH_SECRET=<openssl rand -base64 32>   # secret
 BETTER_AUTH_URL=https://hn-monthly-top.vercel.app
-AUTH_SIGNUP_ENABLED=true                       # only while creating an account
+AUTH_SIGNUP_ENABLED=true                       # public sign-up on
 ORIGIN_SECRET=<openssl rand -hex 32>           # same value as on Vercel
 ENCRYPTION_KEY=<node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
 OPENAI_MODEL=gpt-4.1-mini
@@ -93,10 +93,13 @@ ORIGIN_SECRET=<same value as on Railway>
 
 ### Sign-up
 
-Sign-up is off unless `AUTH_SIGNUP_ENABLED=true`, and the "Sign up" option is
-hidden while it is off (`GET /api/auth-config`). To add an account: set it,
-redeploy, sign up, then remove it. A forgotten password means deleting the
-`user` row in Railway's data tab and signing up again.
+Sign-up is open to anyone: `AUTH_SIGNUP_ENABLED=true` is set in production on
+purpose, so other people can use the summariser with their own OpenAI key.
+Removing the variable closes sign-up and hides the "Sign up" option
+(`GET /api/auth-config`); existing users can still log in.
+
+There is no email verification or password reset yet. A forgotten password
+means deleting the `user` row in Railway's data tab and signing up again.
 
 ## Key rotation
 
