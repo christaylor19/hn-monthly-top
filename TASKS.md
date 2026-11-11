@@ -2,7 +2,6 @@
 
 ## In Progress
 
-- [ ] **Finish the Supabase retirement** — auth and DB moved to Better Auth on Railway Postgres (PR #2, live 2026-11-11, verified: sign-up, session IP, scrypt hashes). Left: remove `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CORS_ORIGIN` on Railway and `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` on Vercel, then delete the Supabase project. Public sign-up stays on.
 
 ---
 
@@ -51,6 +50,7 @@
 
 ## Done
 
+- [x] **Moved auth + DB off Supabase** (Nov 2026) — Better Auth (email/password, cookie sessions) on Drizzle + Railway Postgres, Vercel `/api/*` rewrite with `x-origin-secret` (PR #2). Old env vars removed and the Supabase project deleted 2026-11-11. Public sign-up stays on.
 - [x] Initial SolidJS + Vite app (Feb 2026)
 - [x] Algolia HN Search API integration with auto-threshold scaling
 - [x] Month/year picker
