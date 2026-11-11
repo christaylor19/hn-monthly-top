@@ -38,6 +38,7 @@ export default function AuthPanel() {
 
   async function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
     e.preventDefault();
+    if (busy()) return;
     setError(null);
     setBusy(true);
     try {
@@ -57,6 +58,7 @@ export default function AuthPanel() {
 
   async function submitForgot(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
     e.preventDefault();
+    if (busy()) return;
     setError(null);
     setNotice(null);
     setBusy(true);
@@ -72,6 +74,7 @@ export default function AuthPanel() {
 
   async function submitReset(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
     e.preventDefault();
+    if (busy()) return;
     setError(null);
     if (password() !== confirm()) {
       setError("The passwords don't match.");
@@ -137,7 +140,13 @@ export default function AuthPanel() {
                 class="auth-input"
               />
               <button type="submit" class="auth-submit" disabled={busy()}>
-                {busy() ? '…' : signingUp() ? 'Sign up' : 'Sign in'}
+                {busy()
+                  ? signingUp()
+                    ? 'Signing up…'
+                    : 'Signing in…'
+                  : signingUp()
+                    ? 'Sign up'
+                    : 'Sign in'}
               </button>
             </form>
             <Show when={mode() === 'signin' && passwordResetEnabled()}>
@@ -169,7 +178,7 @@ export default function AuthPanel() {
                 class="auth-input"
               />
               <button type="submit" class="auth-submit" disabled={busy()}>
-                {busy() ? '…' : 'Send reset link'}
+                {busy() ? 'Sending…' : 'Send reset link'}
               </button>
             </form>
             <button class="auth-toggle" onClick={() => switchMode('signin')}>
@@ -204,7 +213,7 @@ export default function AuthPanel() {
                 class="auth-input"
               />
               <button type="submit" class="auth-submit" disabled={busy()}>
-                {busy() ? '…' : 'Set new password'}
+                {busy() ? 'Saving…' : 'Set new password'}
               </button>
             </form>
           </Show>

@@ -13,6 +13,19 @@ export const signUpEnabled = process.env.AUTH_SIGNUP_ENABLED === 'true';
 
 export { passwordResetEnabled };
 
+const RESET_EMAIL_COOLDOWN_MS = 60_000;
+const recentResetEmails = new Map<string, number>();
+
+function claimResetEmailSlot(email: string, now = Date.now()): boolean {
+  for (const [key, sentAt] of recentResetEmails) {
+    if (now - sentAt >= RESET_EMAIL_COOLDOWN_MS) recentResetEmails.delete(key);
+  }
+  const key = email.toLowerCase();
+  if (recentResetEmails.has(key)) return false;
+  recentResetEmails.set(key, now);
+  return true;
+}
+
 export const CLIENT_IP_HEADER = 'x-hn-client-ip';
 
 export const auth = betterAuth({
@@ -28,6 +41,7 @@ export const auth = betterAuth({
     revokeSessionsOnPasswordReset: true,
     ...(passwordResetEnabled && {
       sendResetPassword: async ({ user, url }) => {
+        if (!claimResetEmailSlot(user.email)) return;
         sendPasswordResetEmail(user.email, url).catch((err: unknown) => {
           console.error('password reset email failed', err);
         });
