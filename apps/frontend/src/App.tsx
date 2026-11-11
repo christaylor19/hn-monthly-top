@@ -73,8 +73,10 @@ function App() {
         <span class="header-logo">Y</span>
         <span class="header-title">Hacker News Monthly Top</span>
         <MonthPicker period={period()} onChange={setPeriod} />
-        <SettingsPanel />
-        <AuthPanel />
+        <div class="header-actions">
+          <SettingsPanel />
+          <AuthPanel />
+        </div>
       </div>
 
       <Show when={loading()}>
