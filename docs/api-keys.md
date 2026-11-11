@@ -8,17 +8,25 @@ app owner pays nothing for it.
 ## How it works
 
 ```
-Browser (Solid)                 Fastify (Railway)              Supabase
-───────────────                 ─────────────────              ────────
-log in ──────────────────────▶  (Supabase Auth issues JWT)  ◀─ auth.users
-paste OpenAI key ────────────▶  verify JWT (jose + JWKS)
+Browser (Solid, Vercel)         Fastify (Railway)              Postgres (Railway)
+───────────────────────         ─────────────────              ──────────────────
+/api/* is same-origin: Vercel rewrites it to Railway and adds x-origin-secret
+
+log in ──────────────────────▶  Better Auth checks password ◀─ user, account
+                                sets session cookie ───────▶  session
+paste OpenAI key ────────────▶  look up session from cookie
                                 AES-256-GCM encrypt  ◀── ENCRYPTION_KEY
                                 store ciphertext ───────────▶ user_api_keys
-summarise (JWT attached) ─────▶ verify JWT
+summarise (cookie sent) ──────▶ look up session from cookie
                                 decrypt user's key
                                 call OpenAI with it
                                 return summary ◀─────────────
 ```
+
+Auth is [Better Auth](https://www.better-auth.com) (email and password, no email
+verification, no password reset) on Drizzle. The browser never talks to Railway
+directly: Vercel proxies `/api/*`, so the session cookie is first-party on
+`hn-monthly-top.vercel.app` and no CORS is needed.
 
 ## Security model
 
@@ -33,12 +41,15 @@ out of every place it could leak:
   the full key — replacing overwrites, it doesn't reveal.
 - **Encrypted at rest, application-side.** Fastify encrypts with AES-256-GCM
   (`apps/server/src/crypto.ts`) using `ENCRYPTION_KEY`, held only on Railway.
-  A full Supabase dump yields ciphertext that is useless without that key.
+  A full database dump yields ciphertext that is useless without that key.
 - **Only ever plaintext at two moments:** when the user types it, and the
   instant the server uses it to call OpenAI.
-- **RLS backstop.** The `user_api_keys` table has RLS enabled with no policies,
-  so even a leaked anon key cannot read it from the browser. Only the
-  server-side service-role key can.
+- **Only the server reaches the database.** Postgres sits on Railway's private
+  network and the browser has no credentials for it. Every query is scoped to
+  the `user_id` of the session.
+- **Only Vercel reaches the API.** With `ORIGIN_SECRET` set, the server rejects
+  `/api/*` requests that don't carry the matching `x-origin-secret` header,
+  which Vercel adds on every proxied request.
 
 ### Residual risks (honest list)
 
@@ -47,26 +58,27 @@ out of every place it could leak:
   inherent to a server proxying the key; it's the standard trade-off.
 - GCM auth tag protects against tampering, but we do not currently bind the
   ciphertext to the `user_id` (no AAD). A DB-level row swap by an attacker with
-  write access would not be detected by decryption alone — RLS + service-role
-  scoping is what prevents that. Adding `user_id` as AAD is a cheap future
+  write access would not be detected by decryption alone — keeping the
+  database private to the server is what prevents that. Adding `user_id` as AAD is a cheap future
   hardening.
 
 ## Setup
 
-### 1. Supabase
+### 1. Database
 
-1. Create a project at supabase.com.
-2. Apply the schema: `supabase link --project-ref <ref>` then `supabase db push`
-   (migration lives in `supabase/migrations/`). Or paste the migration SQL into
-   the dashboard SQL editor.
-3. Auth → enable Email provider. (Email confirmation on is recommended.)
-4. Project Settings → API → copy the **URL**, **anon key**, **service_role key**.
+Railway Postgres is declared in `.railway/railway.ts`. Migrations live in
+`apps/server/drizzle/` (generate with `pnpm --filter @hn-monthly-top/server db:generate`
+after a schema change) and run in Railway's pre-deploy step
+(`node apps/server/dist/migrate.js`), so a deploy only goes live once they pass.
 
 ### 2. Server env (Railway)
 
 ```
-SUPABASE_URL=https://<ref>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<service_role key>   # secret — server only
+DATABASE_URL=${{Postgres.DATABASE_URL}}        # reference variable
+BETTER_AUTH_SECRET=<openssl rand -base64 32>   # secret
+BETTER_AUTH_URL=https://hn-monthly-top.vercel.app
+AUTH_SIGNUP_ENABLED=true                       # only while creating an account
+ORIGIN_SECRET=<openssl rand -hex 32>           # same value as on Vercel
 ENCRYPTION_KEY=<node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
 OPENAI_MODEL=gpt-4.1-mini
 ```
@@ -74,10 +86,17 @@ OPENAI_MODEL=gpt-4.1-mini
 ### 3. Frontend env (Vercel)
 
 ```
-VITE_API_URL=https://<your-railway-app>.up.railway.app
-VITE_SUPABASE_URL=https://<ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon key>             # safe to expose
+ORIGIN_SECRET=<same value as on Railway>
 ```
+
+`vercel.json` reads it at request time to set `x-origin-secret` on `/api/*`.
+
+### Sign-up
+
+Sign-up is off unless `AUTH_SIGNUP_ENABLED=true`, and the "Sign up" option is
+hidden while it is off (`GET /api/auth-config`). To add an account: set it,
+redeploy, sign up, then remove it. A forgotten password means deleting the
+`user` row in Railway's data tab and signing up again.
 
 ## Key rotation
 
@@ -88,7 +107,15 @@ VITE_SUPABASE_ANON_KEY=<anon key>             # safe to expose
 
 ## Local development
 
-If `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are unset, the login and
-API-key UI hide themselves and the app runs in anonymous-only mode (browse
-works, summarise is unavailable). This lets you run the frontend without a
-Supabase project.
+Run a local Postgres, copy `apps/server/.env.example` to `apps/server/.env`, then
+apply migrations and start both apps:
+
+```bash
+docker run -d --name hnmt-pg -e POSTGRES_USER=hnmt -e POSTGRES_PASSWORD=hnmt \
+  -e POSTGRES_DB=hnmt -p 127.0.0.1:5432:5432 postgres:17
+pnpm build:server && node --env-file=apps/server/.env apps/server/dist/migrate.js
+pnpm dev
+```
+
+Vite proxies `/api` to the server, so the cookie is same-origin on
+`localhost:5173`, which is also `BETTER_AUTH_URL` locally.

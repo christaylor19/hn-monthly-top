@@ -14,7 +14,7 @@ Give a short, prioritised view of the next work on the app.
    - `git fetch origin` then `git log --oneline -15 origin/main`
    - `gh pr list --state open`
    - Read `TASKS.md` from `origin/main` (`git show origin/main:TASKS.md`)
-2. List the unchecked items under **In Progress** and **Backlog**, flagging any blocked on Chris (decisions, Railway or Vercel settings, Supabase).
+2. List the unchecked items under **In Progress** and **Backlog**, flagging any blocked on Chris (decisions, Railway or Vercel settings).
 3. Recommend the single next task and why, in two sentences.
 
 ## Rules

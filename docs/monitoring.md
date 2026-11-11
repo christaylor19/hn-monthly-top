@@ -43,7 +43,7 @@ Both summarise routes in `apps/server/src/main.ts` emit one structured
   "evt": "summarise",
   "kind": "article", // or "comments"
   "verbosity": "detailed", // concise | balanced | detailed
-  "userId": "a1b2c3d4-...", // Supabase user id
+  "userId": "a1b2c3d4-...", // Better Auth user id
   "titleOnly": false, // article only: true = Jina content fetch failed
   "msg": "summarise"
 }
@@ -75,5 +75,5 @@ The distinct-`userId` count is the "N people have used the summariser" number.
 
 Railway logs are a rolling window (days, not months), so this answers "is it
 being used now / this week", not long-term trends. For durable counts, write a
-row per summary to a Supabase table (auth + Postgres are already wired up) — not
+row per summary to a Postgres table (Railway Postgres is already wired up) — not
 built yet, add it if long-term analytics are ever needed.
