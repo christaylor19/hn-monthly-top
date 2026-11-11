@@ -1,5 +1,5 @@
 // Format a unix timestamp (seconds) as a relative "x ago" string, HN-style.
-export function timeAgo(timestamp) {
+export function timeAgo(timestamp: number): string {
   const seconds = Math.floor(Date.now() / 1000) - timestamp;
   if (seconds < 60) return `${seconds} seconds ago`;
   const minutes = Math.floor(seconds / 60);

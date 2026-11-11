@@ -1,3 +1,20 @@
+import type { Period } from '../utils/period';
+
+export interface Story {
+  objectID: string;
+  title: string;
+  url?: string | null;
+  points: number | null;
+  author: string;
+  created_at_i: number;
+  num_comments: number | null;
+}
+
+interface SearchResponse {
+  hits: Story[];
+  nbPages: number;
+}
+
 const BASE_URL = 'https://hn.algolia.com/api/v1/search';
 
 // --- Period -> unix [start, end) range -------------------------------------
@@ -6,13 +23,13 @@ const BASE_URL = 'https://hn.algolia.com/api/v1/search';
 // All ranges are half-open: start inclusive, end exclusive, matching the
 // existing `created_at_i>start,created_at_i<end` Algolia filter.
 
-function toUnix(date) {
+function toUnix(date: Date): number {
   return Math.floor(date.getTime() / 1000);
 }
 
 // Monday of ISO week 1 for a given year. ISO 8601: week 1 is the week
 // containing the first Thursday, equivalently the week containing Jan 4th.
-function isoWeek1Monday(year) {
+function isoWeek1Monday(year: number): Date {
   const jan4 = new Date(year, 0, 4);
   const day = jan4.getDay() || 7; // getDay(): Sun=0 -> treat as 7
   const monday = new Date(jan4);
@@ -20,7 +37,7 @@ function isoWeek1Monday(year) {
   return monday;
 }
 
-function getPeriodRange(period) {
+function getPeriodRange(period: Period): { start: number; end: number } {
   const { granularity, year, month, week } = period;
 
   if (granularity === 'year') {
@@ -32,7 +49,7 @@ function getPeriodRange(period) {
 
   if (granularity === 'week') {
     const start = isoWeek1Monday(year);
-    start.setDate(start.getDate() + (week - 1) * 7);
+    start.setDate(start.getDate() + ((week ?? 1) - 1) * 7);
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
     return { start: toUnix(start), end: toUnix(end) };
@@ -40,15 +57,15 @@ function getPeriodRange(period) {
 
   // month (default)
   return {
-    start: toUnix(new Date(year, month - 1, 1)),
-    end: toUnix(new Date(year, month, 1)),
+    start: toUnix(new Date(year, (month ?? 1) - 1, 1)),
+    end: toUnix(new Date(year, month ?? 1, 1)),
   };
 }
 
 // ISO week number that "now" falls in, measured against the given year's
 // week-1 Monday. Used to default the week picker to the current week. Clamped
 // to the year's week count so a stale year can't produce an out-of-range week.
-export function currentIsoWeek(year) {
+export function currentIsoWeek(year: number): number {
   const now = new Date();
   // Snap now to the Monday of its week (same logic as isoWeek1Monday).
   const day = now.getDay() || 7;
@@ -59,23 +76,23 @@ export function currentIsoWeek(year) {
   // Round the day-diff before dividing by 7: a DST change between week1 and now
   // makes the raw ms span 167.96 (not 168) days, which would floor to the wrong
   // week. Rounding to whole days absorbs the ±1h shift.
-  const days = Math.round((monday - week1) / 86400000);
+  const days = Math.round((monday.getTime() - week1.getTime()) / 86400000);
   const weeks = Math.floor(days / 7) + 1;
   return Math.min(Math.max(weeks, 1), isoWeeksInYear(year));
 }
 
 // Number of ISO weeks in a year (52 or 53) — a year has 53 weeks when it
 // starts on a Thursday, or is a leap year starting on a Wednesday.
-export function isoWeeksInYear(year) {
+export function isoWeeksInYear(year: number): number {
   const jan1Day = new Date(year, 0, 1).getDay();
   const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
   if (jan1Day === 4 || (isLeap && jan1Day === 3)) return 53;
   return 52;
 }
 
-export async function fetchTopStories(period, minPoints = 50) {
+export async function fetchTopStories(period: Period, minPoints = 50): Promise<Story[]> {
   const { start, end } = getPeriodRange(period);
-  const stories = [];
+  const stories: Story[] = [];
   let page = 0;
   const maxPages = 10; // cap at 1000 results
 
@@ -88,7 +105,7 @@ export async function fetchTopStories(period, minPoints = 50) {
       throw new Error(`API error: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data = (await res.json()) as SearchResponse;
     stories.push(...data.hits);
 
     if (page >= data.nbPages - 1) break;
@@ -102,6 +119,6 @@ export async function fetchTopStories(period, minPoints = 50) {
     return fetchTopStories(period, minPoints * 2);
   }
 
-  filtered.sort((a, b) => b.points - a.points);
+  filtered.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
   return filtered;
 }

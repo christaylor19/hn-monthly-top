@@ -1,10 +1,16 @@
 import { track } from '@vercel/analytics';
 import { verbosity } from '../store/settings';
+import type { Comment } from './comments';
 import { accessToken } from '../store/auth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-async function postJson(path, body) {
+export interface ArticleSummary {
+  text: string;
+  titleOnly: boolean;
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
   const token = accessToken();
   if (!token) throw new Error('Log in and add your OpenAI key in settings to summarise.');
 
@@ -17,25 +23,28 @@ async function postJson(path, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error || `Request failed: ${res.status}`);
   }
-  return res.json();
+  return (await res.json()) as T;
 }
 
-export async function summariseArticle(title, url) {
+export async function summariseArticle(
+  title: string,
+  url?: string | null,
+): Promise<ArticleSummary> {
   track('summarise', { kind: 'article', verbosity: verbosity().value });
-  return postJson('/api/summarise/article', {
+  return postJson<ArticleSummary>('/api/summarise/article', {
     title,
     url,
     verbosity: verbosity().value,
   });
 }
 
-export async function summariseComments(title, comments) {
+export async function summariseComments(title: string, comments: Comment[]): Promise<string> {
   if (!comments.length) throw new Error('No comments to summarise.');
   track('summarise', { kind: 'comments', verbosity: verbosity().value });
-  const { text } = await postJson('/api/summarise/comments', {
+  const { text } = await postJson<{ text: string }>('/api/summarise/comments', {
     title,
     comments: comments.map((c) => ({ author: c.author, text: c.text })),
     verbosity: verbosity().value,

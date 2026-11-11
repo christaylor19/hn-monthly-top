@@ -1,8 +1,9 @@
 import { createSignal } from 'solid-js';
 import SummaryPanel from './SummaryPanel';
+import type { Story } from '../api/hn';
 import { timeAgo } from '../utils/time';
 
-function extractDomain(url) {
+function extractDomain(url?: string | null): string | null {
   if (!url) return null;
   try {
     const hostname = new URL(url).hostname;
@@ -12,7 +13,7 @@ function extractDomain(url) {
   }
 }
 
-export default function StoryRow(props) {
+export default function StoryRow(props: { story: Story; rank: number }) {
   const [summaryOpen, setSummaryOpen] = createSignal(false);
   const domain = () => extractDomain(props.story.url);
   const hnUrl = () => `https://news.ycombinator.com/item?id=${props.story.objectID}`;

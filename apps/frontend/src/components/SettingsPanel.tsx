@@ -1,21 +1,22 @@
-import { createSignal, createEffect, Show } from 'solid-js';
+import { createSignal, createEffect, For, Show } from 'solid-js';
 import { verbosity, updateVerbosity, VERBOSITY_LEVELS } from '../store/settings';
 import { session, isConfigured } from '../store/auth';
-import { getKeyStatus, saveKey, deleteKey } from '../api/keys';
+import { getKeyStatus, saveKey, deleteKey, type KeyStatus } from '../api/keys';
 
 export default function SettingsPanel() {
   const [open, setOpen] = createSignal(false);
 
   // API key state
-  const [keyStatus, setKeyStatus] = createSignal(null); // { hasKey, lastFour }
+  const [keyStatus, setKeyStatus] = createSignal<KeyStatus | null>(null);
   const [keyInput, setKeyInput] = createSignal('');
   const [keyBusy, setKeyBusy] = createSignal(false);
-  const [keyError, setKeyError] = createSignal(null);
+  const [keyError, setKeyError] = createSignal<string | null>(null);
 
   const currentIndex = () => VERBOSITY_LEVELS.findIndex((l) => l.value === verbosity().value);
 
-  function handleSlider(e) {
-    updateVerbosity(VERBOSITY_LEVELS[parseInt(e.target.value)].value);
+  function handleSlider(e: InputEvent & { currentTarget: HTMLInputElement }) {
+    const level = VERBOSITY_LEVELS[parseInt(e.currentTarget.value, 10)];
+    if (level) updateVerbosity(level.value);
   }
 
   // Load key status whenever a logged-in user opens the panel.
@@ -23,11 +24,11 @@ export default function SettingsPanel() {
     if (open() && session()) {
       getKeyStatus()
         .then(setKeyStatus)
-        .catch((e) => setKeyError(e.message));
+        .catch((e) => setKeyError(e instanceof Error ? e.message : String(e)));
     }
   });
 
-  async function handleSaveKey(e) {
+  async function handleSaveKey(e: SubmitEvent) {
     e.preventDefault();
     setKeyError(null);
     setKeyBusy(true);
@@ -36,7 +37,7 @@ export default function SettingsPanel() {
       setKeyStatus(status);
       setKeyInput(''); // never keep the plaintext key around
     } catch (err) {
-      setKeyError(err.message);
+      setKeyError(err instanceof Error ? err.message : String(err));
     } finally {
       setKeyBusy(false);
     }
@@ -49,7 +50,7 @@ export default function SettingsPanel() {
       const status = await deleteKey();
       setKeyStatus(status);
     } catch (err) {
-      setKeyError(err.message);
+      setKeyError(err instanceof Error ? err.message : String(err));
     } finally {
       setKeyBusy(false);
     }
@@ -79,9 +80,11 @@ export default function SettingsPanel() {
                 class="settings-slider"
               />
               <div class="settings-slider-labels">
-                {VERBOSITY_LEVELS.map((l) => (
-                  <span class={l.value === verbosity().value ? 'active' : ''}>{l.label}</span>
-                ))}
+                <For each={VERBOSITY_LEVELS}>
+                  {(l) => (
+                    <span class={l.value === verbosity().value ? 'active' : ''}>{l.label}</span>
+                  )}
+                </For>
               </div>
             </div>
           </div>
@@ -95,7 +98,7 @@ export default function SettingsPanel() {
               >
                 <Show when={keyStatus()?.hasKey}>
                   <div class="settings-key-current">
-                    Saved: <code>sk-…{keyStatus().lastFour}</code>
+                    Saved: <code>sk-…{keyStatus()?.lastFour}</code>
                     <button
                       class="settings-key-remove"
                       onClick={handleRemoveKey}
@@ -110,7 +113,7 @@ export default function SettingsPanel() {
                     type="password"
                     placeholder={keyStatus()?.hasKey ? 'Replace key…' : 'sk-…'}
                     value={keyInput()}
-                    onInput={(e) => setKeyInput(e.target.value)}
+                    onInput={(e) => setKeyInput(e.currentTarget.value)}
                     class="settings-key-input"
                     autocomplete="off"
                     data-1p-ignore
