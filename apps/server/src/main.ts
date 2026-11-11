@@ -1,24 +1,42 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
+import { timingSafeEqual } from 'node:crypto';
+import Fastify, { type FastifyRequest } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
+import { fromNodeHeaders } from 'better-auth/node';
 import { summariseArticle, summariseComments } from './summarise.js';
 import { requireAuth } from './auth.js';
+import { auth, authBaseURL, signUpEnabled, CLIENT_IP_HEADER } from './lib/auth.js';
 import { setUserKey, getUserKey, getUserKeyMeta, deleteUserKey } from './keys.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
+const ORIGIN_SECRET = process.env.ORIGIN_SECRET;
 
 // trustProxy lets the rate limiter (and req.ip) read the real client IP from
 // X-Forwarded-For. On Railway every request arrives via the platform proxy, so
 // without this the limiter would bucket all users under one address.
 const app = Fastify({ logger: true, trustProxy: true });
 
-await app.register(cors, {
-  origin: process.env.CORS_ORIGIN?.split(',') ?? true,
-  // Pin methods explicitly. Left unset, the preflight only advertises the
-  // methods derived at registration time, which silently dropped DELETE and
-  // made the browser block the "remove key" request before it was sent.
-  methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
+function hasOriginSecret(req: FastifyRequest): boolean {
+  if (!ORIGIN_SECRET) return false;
+  const sent = req.headers['x-origin-secret'];
+  if (typeof sent !== 'string') return false;
+  const a = Buffer.from(sent);
+  const b = Buffer.from(ORIGIN_SECRET);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function clientIp(req: FastifyRequest): string {
+  const vercelIp = req.headers['x-vercel-forwarded-for'];
+  if (typeof vercelIp === 'string' && hasOriginSecret(req)) {
+    const first = vercelIp.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return req.ip;
+}
+
+app.addHook('onRequest', async (req, reply) => {
+  if (!ORIGIN_SECRET || !req.url.startsWith('/api/')) return;
+  if (!hasOriginSecret(req)) return reply.status(403).send({ error: 'Forbidden.' });
 });
 
 // Per-IP rate limit. Generous global default; the summarise routes (which fan
@@ -27,6 +45,7 @@ await app.register(rateLimit, {
   global: true,
   max: 120,
   timeWindow: '1 minute',
+  keyGenerator: clientIp,
 });
 
 // Tighter limit shared by both summarise endpoints.
@@ -35,6 +54,32 @@ const SUMMARISE_RATE_LIMIT = {
 };
 
 app.get('/health', async () => ({ ok: true }));
+
+app.get('/api/auth-config', async () => ({ signUpEnabled }));
+
+app.route({
+  method: ['GET', 'POST'],
+  url: '/api/auth/*',
+  async handler(req, reply) {
+    const headers = fromNodeHeaders(req.headers);
+    headers.set(CLIENT_IP_HEADER, clientIp(req));
+    const hasBody = req.method !== 'GET' && req.body !== undefined;
+    const response = await auth.handler(
+      new Request(new URL(req.url, authBaseURL), {
+        method: req.method,
+        headers,
+        body: hasBody ? JSON.stringify(req.body) : undefined,
+      }),
+    );
+    reply.status(response.status);
+    response.headers.forEach((value, key) => {
+      if (key !== 'set-cookie') reply.header(key, value);
+    });
+    const cookies = response.headers.getSetCookie();
+    if (cookies.length) reply.header('set-cookie', cookies);
+    return reply.send(response.body ? await response.text() : null);
+  },
+});
 
 const NO_KEY_MSG = 'Add your OpenAI API key in settings to use the summariser.';
 

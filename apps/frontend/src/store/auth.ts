@@ -1,43 +1,30 @@
-import { createClient, type Session } from '@supabase/supabase-js';
+import { createAuthClient } from 'better-auth/solid';
 import { createSignal } from 'solid-js';
 
-// Supabase client (browser). Uses the anon/publishable key, which is safe to
-// ship — it only permits what Row-Level Security allows. The OpenAI key never
-// touches Supabase from the browser; it's sent to our own backend over the JWT.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const authClient = createAuthClient({ basePath: '/api/auth' });
 
-export const supabase =
-  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+const sessionState = authClient.useSession();
 
-const [session, setSession] = createSignal<Session | null>(null);
-export { session };
+export const session = () => sessionState().data;
 
-export const isConfigured = () => !!supabase;
+const [signUpEnabled, setSignUpEnabled] = createSignal(false);
+export { signUpEnabled };
 
-if (supabase) {
-  supabase.auth.getSession().then(({ data }) => setSession(data.session));
-  supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-}
-
-// The JWT to attach to backend requests, or null if signed out.
-export function accessToken(): string | null {
-  return session()?.access_token ?? null;
-}
+fetch('/api/auth-config')
+  .then((res) => (res.ok ? (res.json() as Promise<{ signUpEnabled?: boolean }>) : null))
+  .then((config) => setSignUpEnabled(config?.signUpEnabled === true))
+  .catch(() => setSignUpEnabled(false));
 
 export async function signInWithEmail(email: string, password: string): Promise<void> {
-  if (!supabase) throw new Error('Auth is not configured.');
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message);
+  const { error } = await authClient.signIn.email({ email, password });
+  if (error) throw new Error(error.message ?? 'Sign in failed.');
 }
 
 export async function signUpWithEmail(email: string, password: string): Promise<void> {
-  if (!supabase) throw new Error('Auth is not configured.');
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) throw new Error(error.message);
+  const { error } = await authClient.signUp.email({ email, password, name: email });
+  if (error) throw new Error(error.message ?? 'Sign up failed.');
 }
 
 export async function signOut(): Promise<void> {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  await authClient.signOut();
 }

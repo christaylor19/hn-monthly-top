@@ -1,9 +1,7 @@
 import { track } from '@vercel/analytics';
 import { verbosity } from '../store/settings';
 import type { Comment } from './comments';
-import { accessToken } from '../store/auth';
-
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import { session } from '../store/auth';
 
 export interface ArticleSummary {
   text: string;
@@ -11,15 +9,12 @@ export interface ArticleSummary {
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const token = accessToken();
-  if (!token) throw new Error('Log in and add your OpenAI key in settings to summarise.');
+  if (!session()) throw new Error('Log in and add your OpenAI key in settings to summarise.');
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(path, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

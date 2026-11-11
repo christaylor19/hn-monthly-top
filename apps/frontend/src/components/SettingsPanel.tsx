@@ -1,6 +1,6 @@
 import { createSignal, createEffect, For, Show } from 'solid-js';
 import { verbosity, updateVerbosity, VERBOSITY_LEVELS } from '../store/settings';
-import { session, isConfigured } from '../store/auth';
+import { session } from '../store/auth';
 import { getKeyStatus, saveKey, deleteKey, type KeyStatus } from '../api/keys';
 
 export default function SettingsPanel() {
@@ -89,79 +89,73 @@ export default function SettingsPanel() {
             </div>
           </div>
 
-          <Show when={isConfigured()}>
-            <div class="settings-row">
-              <span class="settings-label">OpenAI API key</span>
-              <Show
-                when={session()}
-                fallback={<div class="settings-hint">Log in to add your key.</div>}
-              >
-                <Show when={keyStatus()?.hasKey}>
-                  <div class="settings-key-current">
-                    Saved: <code>sk-…{keyStatus()?.lastFour}</code>
-                    <button
-                      class="settings-key-remove"
-                      onClick={handleRemoveKey}
-                      disabled={keyBusy()}
-                    >
-                      remove
-                    </button>
-                  </div>
-                </Show>
-                <form onSubmit={handleSaveKey} class="settings-key-form">
-                  <input
-                    type="password"
-                    placeholder={keyStatus()?.hasKey ? 'Replace key…' : 'sk-…'}
-                    value={keyInput()}
-                    onInput={(e) => setKeyInput(e.currentTarget.value)}
-                    class="settings-key-input"
-                    autocomplete="off"
-                    data-1p-ignore
-                    data-lpignore="true"
-                  />
+          <div class="settings-row">
+            <span class="settings-label">OpenAI API key</span>
+            <Show
+              when={session()}
+              fallback={<div class="settings-hint">Log in to add your key.</div>}
+            >
+              <Show when={keyStatus()?.hasKey}>
+                <div class="settings-key-current">
+                  Saved: <code>sk-…{keyStatus()?.lastFour}</code>
                   <button
-                    type="submit"
-                    class="settings-key-save"
-                    disabled={keyBusy() || !keyInput()}
+                    class="settings-key-remove"
+                    onClick={handleRemoveKey}
+                    disabled={keyBusy()}
                   >
-                    {keyBusy() ? '…' : 'Save'}
+                    remove
                   </button>
-                </form>
-                <Show when={keyError()}>
-                  <div class="settings-key-error">{keyError()}</div>
-                </Show>
-                <div class="settings-hint">
-                  Summaries run on <em>your</em> OpenAI account, so you'll need your own API key:
-                  <ol class="settings-key-steps">
-                    <li>
-                      Create a key at{' '}
-                      <a
-                        href="https://platform.openai.com/api-keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        platform.openai.com/api-keys
-                      </a>
-                      .
-                    </li>
-                    <li>
-                      Add a little credit under{' '}
-                      <a
-                        href="https://platform.openai.com/settings/organization/billing/overview"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Billing
-                      </a>{' '}
-                      — a few dollars covers a lot of summaries.
-                    </li>
-                    <li>Paste the key above and hit Save.</li>
-                  </ol>
-                  Your key is encrypted and stored server-side. It's never shown again after saving.
                 </div>
               </Show>
-            </div>
-          </Show>
+              <form onSubmit={handleSaveKey} class="settings-key-form">
+                <input
+                  type="password"
+                  placeholder={keyStatus()?.hasKey ? 'Replace key…' : 'sk-…'}
+                  value={keyInput()}
+                  onInput={(e) => setKeyInput(e.currentTarget.value)}
+                  class="settings-key-input"
+                  autocomplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                />
+                <button type="submit" class="settings-key-save" disabled={keyBusy() || !keyInput()}>
+                  {keyBusy() ? '…' : 'Save'}
+                </button>
+              </form>
+              <Show when={keyError()}>
+                <div class="settings-key-error">{keyError()}</div>
+              </Show>
+              <div class="settings-hint">
+                Summaries run on <em>your</em> OpenAI account, so you'll need your own API key:
+                <ol class="settings-key-steps">
+                  <li>
+                    Create a key at{' '}
+                    <a
+                      href="https://platform.openai.com/api-keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      platform.openai.com/api-keys
+                    </a>
+                    .
+                  </li>
+                  <li>
+                    Add a little credit under{' '}
+                    <a
+                      href="https://platform.openai.com/settings/organization/billing/overview"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Billing
+                    </a>{' '}
+                    — a few dollars covers a lot of summaries.
+                  </li>
+                  <li>Paste the key above and hit Save.</li>
+                </ol>
+                Your key is encrypted and stored server-side. It's never shown again after saving.
+              </div>
+            </Show>
+          </div>
         </div>
       )}
     </div>

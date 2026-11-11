@@ -323,11 +323,6 @@ a:hover {
   font-size: 8pt;
 }
 
-.auth-info {
-  color: #ff6600;
-  font-size: 8pt;
-}
-
 /* Auth panel (header) */
 .auth-wrap {
   position: relative;

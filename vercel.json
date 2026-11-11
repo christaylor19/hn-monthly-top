@@ -3,5 +3,20 @@
   "buildCommand": "pnpm build:frontend",
   "outputDirectory": "apps/frontend/dist",
   "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "vite"
+  "framework": "vite",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://hn-monthly-production.up.railway.app/api/$1",
+      "transforms": [
+        {
+          "type": "request.headers",
+          "op": "set",
+          "target": { "key": "x-origin-secret" },
+          "args": "$ORIGIN_SECRET",
+          "env": ["ORIGIN_SECRET"]
+        }
+      ]
+    }
+  ]
 }
