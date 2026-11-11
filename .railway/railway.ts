@@ -10,8 +10,6 @@ export default defineRailway(() => {
     },
     deploy: {
       startCommand: 'pnpm start:server',
-      restartPolicyType: 'ON_FAILURE',
-      restartPolicyMaxRetries: 10,
       healthcheckPath: '/health',
     },
     replicas: { 'europe-west4-drams3a': 1 },
