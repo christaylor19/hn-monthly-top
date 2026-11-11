@@ -63,7 +63,7 @@ VITE_SUPABASE_ANON_KEY=       # safe to expose
 
 ### Backend (Railway)
 
-`railway.json` at the repo root configures Railway (Railpack builder) to install with pnpm (pinned by `packageManager` in `package.json`) and run `pnpm start:server`. Set the env vars from `apps/server/.env.example` in Railway.
+`.railway/railway.ts` defines the Railway service in code: Railpack builder, pnpm install and `pnpm build:server`, `pnpm start:server`, restart on failure and a `/health` healthcheck. Railway does not read it on deploy: after editing it, run `railway config plan` and then `railway config apply`. Env vars are not managed in code; set them from `apps/server/.env.example` in Railway.
 
 The service is connected to GitHub (`christaylor19/hn-monthly-top`, branch `main`), so **pushes to `main` auto-deploy the backend** — no manual step. A manual `railway up --detach` from the repo root still works as a fallback.
 

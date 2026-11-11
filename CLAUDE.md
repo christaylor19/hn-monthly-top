@@ -9,7 +9,7 @@ LLM article and comment summaries. pnpm workspaces monorepo:
 
 - `apps/frontend`: SolidJS + Vite SPA in strict TypeScript, deployed to Vercel from the root `vercel.json`.
 - `apps/server`: Fastify API in strict TypeScript that proxies OpenAI and Jina, deployed to Railway
-  (Railpack) from the root `railway.json`.
+  (Railpack), configured in `.railway/railway.ts`.
 
 `TASKS.md` is the source of truth for what is decided, in progress and next. Update it as work
 happens.
@@ -23,6 +23,9 @@ happens.
 - **Frontend and backend deploy separately.** Vercel serves the SPA; the SPA calls the Railway API
   through `VITE_API_URL`.
 - **Node 24 LTS** (`.nvmrc`, `engines.node`).
+- **Railway config lives in `.railway/railway.ts`, not `railway.json`.** Railway stops reading
+  `railway.json` on 2026-12-01. Changes apply only through `railway config plan` and
+  `railway config apply`, never on push. Env vars stay unmanaged.
 
 ## Dev Rules
 

@@ -59,6 +59,7 @@ _(nothing active)_
 - [x] Migrated to Yarn workspaces monorepo with `apps/frontend` + `apps/server` (Apr 2026); moved to pnpm workspaces (Nov 2026)
 - [x] Fastify backend proxy holding OpenAI/Jina keys server-side (Apr 2026)
 - [x] Railway deployment config (`railway.json`, `nixpacks.toml`) (Apr 2026)
+- [x] **Railway config as code** (Nov 2026): `railway.json` replaced by `.railway/railway.ts` ahead of the 2026-12-01 cutoff. Applied with `railway config apply`; env vars stay unmanaged.
 - [x] Backend deployed to Railway, frontend on Vercel — summarise working end to end in prod (Apr 2026)
 - [x] **Auth + user-supplied API keys** (Jun 2026) — Supabase email/password auth, AES-256-GCM-encrypted per-user OpenAI keys stored server-side, summariser gated behind login + own key (zero owner spend). Verified end to end in prod: signup → save key → summarise. See `docs/api-keys.md`.
 - [x] Fixed Algolia `points` numericFilter 400 — moved threshold to client-side filter (Jun 2026)
