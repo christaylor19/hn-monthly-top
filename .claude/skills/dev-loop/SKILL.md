@@ -38,7 +38,7 @@ Keep a `Parked:` line for anything set aside.
 
 ## 4. Agent briefs
 
-Every brief includes: the `TASKS.md` item, a fresh worktree off `origin/main`, no code comments, no `git stash`, the verify and browser checks above, the push-to-`main` steps, no production writes (Railway, Vercel, Supabase settings, env vars, data), and "if any action is denied, stop and report". Name any other running agents and the files they own. Use Sonnet for builds to a clear brief.
+Every brief includes: the `TASKS.md` item, a fresh worktree off `origin/main`, no code comments, no `git stash`, the verify and browser checks above, the push-to-`main` steps, no production writes (Railway or Vercel settings, env vars, data), and "if any action is denied, stop and report". Name any other running agents and the files they own. Use Sonnet for builds to a clear brief.
 
 ## 5. Pause
 

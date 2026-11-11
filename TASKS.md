@@ -2,7 +2,7 @@
 
 ## In Progress
 
-_(nothing active)_
+- [ ] **Move auth + DB off Supabase** (Nov 2026) — Better Auth (email/password, cookie sessions) on Drizzle + Railway Postgres; Vercel rewrites `/api/*` to Railway with an `x-origin-secret` header so cookies are first-party. PR open, not merged: Chris applies `.railway/railway.ts` (adds Postgres + pre-deploy migrate) and sets the env vars first, then merges, signs up again and re-enters his OpenAI key. Then: turn off `AUTH_SIGNUP_ENABLED`, delete the Supabase project and remove the old `SUPABASE_*`, `CORS_ORIGIN` and `VITE_*` env vars.
 
 ---
 

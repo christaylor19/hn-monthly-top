@@ -20,8 +20,12 @@ happens.
   reintroduce Yarn or `yarn.lock`.
 - **Browsing is anonymous; summarising needs login and the user's own OpenAI key.** Keys are
   AES-256-GCM encrypted server-side. See `docs/api-keys.md`.
-- **Frontend and backend deploy separately.** Vercel serves the SPA; the SPA calls the Railway API
-  through `VITE_API_URL`.
+- **Frontend and backend deploy separately.** Vercel serves the SPA and rewrites `/api/*` to the
+  Railway API (`vercel.json`), so the SPA calls same-origin `/api` and the session cookie is
+  first-party. The server rejects `/api/*` without the `x-origin-secret` Vercel adds.
+- **Auth is Better Auth on Drizzle and Railway Postgres.** Email and password, cookie sessions, no
+  email verification or reset. Sign-up is gated by `AUTH_SIGNUP_ENABLED`. Migrations live in
+  `apps/server/drizzle/` and run in Railway's pre-deploy step.
 - **Node 24 LTS** (`.nvmrc`, `engines.node`).
 - **Railway config lives in `.railway/railway.ts`, not `railway.json`.** Railway stops reading
   `railway.json` on 2026-12-01. Changes apply only through `railway config plan` and
@@ -89,6 +93,8 @@ line.
 ## What NOT to Do
 
 - Don't change Railway or Vercel settings, env vars or data without being asked.
+- Don't hand-edit generated migrations in `apps/server/drizzle/`; change the schema and run
+  `pnpm --filter @hn-monthly-top/server db:generate`.
 - Don't add comments to code.
 - Don't use `any`.
 - Don't create new doc files without checking whether one exists to update.
