@@ -9,6 +9,7 @@ import {
   authBaseURL,
   signUpEnabled,
   passwordResetEnabled,
+  findResetEmail,
   CLIENT_IP_HEADER,
 } from './lib/auth.js';
 import { setUserKey, getUserKey, getUserKeyMeta, deleteUserKey } from './keys.js';
@@ -62,6 +63,27 @@ const SUMMARISE_RATE_LIMIT = {
 app.get('/health', async () => ({ ok: true }));
 
 app.get('/api/auth-config', async () => ({ signUpEnabled, passwordResetEnabled }));
+
+const RESET_TOKEN_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+
+app.post<{ Body: { token?: unknown } }>(
+  '/api/password-reset/email',
+  { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
+  async (req, reply) => {
+    const token = req.body?.token;
+    if (!passwordResetEnabled || typeof token !== 'string' || !RESET_TOKEN_PATTERN.test(token)) {
+      return reply.status(404).send({ error: 'INVALID_TOKEN' });
+    }
+    try {
+      const email = await findResetEmail(token);
+      if (!email) return reply.status(404).send({ error: 'INVALID_TOKEN' });
+      return { email };
+    } catch (e) {
+      req.log.error(e);
+      return reply.status(404).send({ error: 'INVALID_TOKEN' });
+    }
+  },
+);
 
 app.route({
   method: ['GET', 'POST'],

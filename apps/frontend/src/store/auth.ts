@@ -24,7 +24,7 @@ fetch('/api/auth-config')
     setPasswordResetEnabled(false);
   });
 
-const INVALID_LINK = 'This reset link is invalid or has expired.';
+export const INVALID_LINK = 'This reset link is invalid or has expired.';
 
 export type ResetLink = { token: string } | { error: string };
 
@@ -58,7 +58,26 @@ export async function requestPasswordReset(email: string): Promise<void> {
   if (error) throw new Error(error.message ?? 'Could not send the reset email.');
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<void> {
+export async function fetchResetEmail(token: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/password-reset/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { email?: unknown };
+    return typeof body.email === 'string' ? body.email : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+  email: string | null,
+): Promise<boolean> {
   const { error } = await authClient.resetPassword({ token, newPassword });
   if (error) {
     throw new Error(
@@ -68,4 +87,7 @@ export async function resetPassword(token: string, newPassword: string): Promise
     );
   }
   await authClient.signOut();
+  if (!email) return false;
+  const signIn = await authClient.signIn.email({ email, password: newPassword });
+  return !signIn.error;
 }

@@ -52,3 +52,11 @@ export const auth = betterAuth({
     ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
   },
 });
+
+export async function findResetEmail(token: string): Promise<string | null> {
+  const ctx = await auth.$context;
+  const verification = await ctx.internalAdapter.findVerificationValue(`reset-password:${token}`);
+  if (!verification || verification.expiresAt < new Date()) return null;
+  const user = await ctx.internalAdapter.findUserById(verification.value);
+  return user?.email ?? null;
+}

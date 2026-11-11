@@ -375,6 +375,11 @@ a:hover {
   font-size: 9pt;
 }
 
+.auth-input-readonly {
+  background: #f6f6ef;
+  color: #828282;
+}
+
 .auth-toggle {
   border: none;
   color: #828282;

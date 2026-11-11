@@ -1,4 +1,4 @@
-import { createSignal, Show } from 'solid-js';
+import { createSignal, onMount, Show } from 'solid-js';
 import {
   session,
   signUpEnabled,
@@ -8,10 +8,12 @@ import {
   signOut,
   requestPasswordReset,
   resetPassword,
+  fetchResetEmail,
   takeResetLink,
+  INVALID_LINK,
 } from '../store/auth';
 
-type Mode = 'signin' | 'signup' | 'forgot' | 'reset';
+type Mode = 'signin' | 'signup' | 'forgot' | 'reset' | 'changed';
 
 export default function AuthPanel() {
   const resetLink = takeResetLink();
@@ -28,7 +30,15 @@ export default function AuthPanel() {
   const [notice, setNotice] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal(false);
   const resetToken = resetLink && 'token' in resetLink ? resetLink.token : null;
+  const [resetEmail, setResetEmail] = createSignal<string | null>(null);
   const signingUp = () => mode() === 'signup' && signUpEnabled();
+
+  onMount(async () => {
+    if (!resetToken) return;
+    const found = await fetchResetEmail(resetToken);
+    if (found) setResetEmail(found);
+    else setError(INVALID_LINK);
+  });
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -81,16 +91,22 @@ export default function AuthPanel() {
       return;
     }
     if (!resetToken) {
-      setError('This reset link is invalid or has expired.');
+      setError(INVALID_LINK);
       return;
     }
     setBusy(true);
     try {
-      await resetPassword(resetToken, password());
+      const signedIn = await resetPassword(resetToken, password(), resetEmail());
       setPassword('');
       setConfirm('');
-      setMode('signin');
-      setNotice('Password changed. Log in with your new password.');
+      if (signedIn) {
+        setMode('changed');
+        setNotice("Password changed. You're signed in.");
+      } else {
+        setEmail(resetEmail() ?? '');
+        setMode('signin');
+        setNotice('Password changed. Log in with your new password.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -108,12 +124,20 @@ export default function AuthPanel() {
           </button>
         }
       >
-        <button class="auth-btn" onClick={() => signOut()} title={session()?.user?.email}>
+        <button
+          class="auth-btn"
+          onClick={() => {
+            setOpen(false);
+            switchMode('signin');
+            void signOut();
+          }}
+          title={session()?.user?.email}
+        >
           Log out
         </button>
       </Show>
 
-      <Show when={open() && (!session() || mode() === 'reset')}>
+      <Show when={open() && (!session() || mode() === 'reset' || mode() === 'changed')}>
         <div class="auth-panel">
           <Show when={mode() === 'signin' || mode() === 'signup'}>
             <form name="login" action="#" method="post" onSubmit={submit}>
@@ -189,6 +213,16 @@ export default function AuthPanel() {
           <Show when={mode() === 'reset'}>
             <form name="reset-password" action="#" method="post" onSubmit={submitReset}>
               <input
+                type="email"
+                name="email"
+                id="auth-reset-email"
+                placeholder="email"
+                autocomplete="username"
+                value={resetEmail() ?? ''}
+                readonly
+                class="auth-input auth-input-readonly"
+              />
+              <input
                 type="password"
                 name="new-password"
                 id="auth-new-password"
@@ -223,6 +257,18 @@ export default function AuthPanel() {
           </Show>
           <Show when={error()}>
             <div class="auth-error">{error()}</div>
+          </Show>
+
+          <Show when={mode() === 'changed'}>
+            <button
+              class="auth-toggle"
+              onClick={() => {
+                setOpen(false);
+                switchMode('signin');
+              }}
+            >
+              Close
+            </button>
           </Show>
         </div>
       </Show>
