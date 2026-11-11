@@ -4,7 +4,13 @@ import rateLimit from '@fastify/rate-limit';
 import { fromNodeHeaders } from 'better-auth/node';
 import { summariseArticle, summariseComments } from './summarise.js';
 import { requireAuth } from './auth.js';
-import { auth, authBaseURL, signUpEnabled, CLIENT_IP_HEADER } from './lib/auth.js';
+import {
+  auth,
+  authBaseURL,
+  signUpEnabled,
+  passwordResetEnabled,
+  CLIENT_IP_HEADER,
+} from './lib/auth.js';
 import { setUserKey, getUserKey, getUserKeyMeta, deleteUserKey } from './keys.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -55,7 +61,7 @@ const SUMMARISE_RATE_LIMIT = {
 
 app.get('/health', async () => ({ ok: true }));
 
-app.get('/api/auth-config', async () => ({ signUpEnabled }));
+app.get('/api/auth-config', async () => ({ signUpEnabled, passwordResetEnabled }));
 
 app.route({
   method: ['GET', 'POST'],
