@@ -1,6 +1,8 @@
-import { defineRailway, github, project, service } from 'railway/iac';
+import { defineRailway, github, postgres, project, service } from 'railway/iac';
 
 export default defineRailway(() => {
+  const db = postgres('Postgres', { region: 'europe-west4-drams3a' });
+
   const hnMonthly = service('hn-monthly', {
     source: github('christaylor19/hn-monthly-top', { branch: 'main', checkSuites: false }),
     build: {
@@ -9,6 +11,7 @@ export default defineRailway(() => {
       buildCommand: 'pnpm install --frozen-lockfile && pnpm build:server',
     },
     deploy: {
+      preDeployCommand: ['node apps/server/dist/migrate.js'],
       startCommand: 'pnpm start:server',
       healthcheckPath: '/health',
     },
@@ -17,6 +20,6 @@ export default defineRailway(() => {
 
   return project('hn-monthly', {
     variables: { managed: false },
-    resources: [hnMonthly],
+    resources: [db, hnMonthly],
   });
 });

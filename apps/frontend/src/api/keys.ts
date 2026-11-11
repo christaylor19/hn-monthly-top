@@ -1,16 +1,6 @@
-import { accessToken } from '../store/auth';
-
-const API_BASE = import.meta.env.VITE_API_URL || '';
-
 export interface KeyStatus {
   hasKey: boolean;
   lastFour?: string | null;
-}
-
-function authHeaders(): Record<string, string> {
-  const token = accessToken();
-  if (!token) throw new Error('You must be logged in.');
-  return { Authorization: `Bearer ${token}` };
 }
 
 async function handle(res: Response): Promise<KeyStatus> {
@@ -23,23 +13,21 @@ async function handle(res: Response): Promise<KeyStatus> {
 
 // Returns { hasKey, lastFour }. The full key is never returned by the backend.
 export async function getKeyStatus(): Promise<KeyStatus> {
-  const res = await fetch(`${API_BASE}/api/keys`, { headers: authHeaders() });
+  const res = await fetch('/api/keys', { credentials: 'same-origin' });
   return handle(res);
 }
 
 export async function saveKey(apiKey: string): Promise<KeyStatus> {
-  const res = await fetch(`${API_BASE}/api/keys`, {
+  const res = await fetch('/api/keys', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiKey }),
   });
   return handle(res);
 }
 
 export async function deleteKey(): Promise<KeyStatus> {
-  const res = await fetch(`${API_BASE}/api/keys`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
+  const res = await fetch('/api/keys', { method: 'DELETE', credentials: 'same-origin' });
   return handle(res);
 }

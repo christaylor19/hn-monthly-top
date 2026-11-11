@@ -1,62 +1,7 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { eq } from 'drizzle-orm';
+import { db } from './db/index.js';
+import { userApiKeys } from './db/schema.js';
 import { encrypt, decrypt } from './crypto.js';
-
-// Stores users' OpenAI API keys as ciphertext in Supabase. The key is encrypted
-// app-side (see crypto.ts) before it ever touches the database, so the stored
-// row is useless without the server's ENCRYPTION_KEY.
-//
-// Uses the Supabase SERVICE ROLE key (server-only, never sent to the browser),
-// which bypasses RLS — access control is enforced here by always scoping to the
-// authenticated req.userId. RLS on the table is a defence-in-depth backstop.
-//
-// Table:
-//   create table user_api_keys (
-//     user_id uuid primary key references auth.users(id) on delete cascade,
-//     ciphertext text not null,
-//     iv text not null,
-//     last_four text not null,
-//     updated_at timestamptz not null default now()
-//   );
-//   alter table user_api_keys enable row level security;
-
-// Row shape of the user_api_keys table. The Supabase client is left untyped
-// (its strict generic inference falls back to `never` without generated DB
-// types), so we assert this shape at the read boundary instead.
-type UserApiKeyRow = {
-  user_id: string;
-  ciphertext: string;
-  iv: string;
-  last_four: string;
-  updated_at: string;
-};
-
-interface Database {
-  public: {
-    Tables: {
-      user_api_keys: {
-        Row: UserApiKeyRow;
-        Insert: UserApiKeyRow;
-        Update: Partial<UserApiKeyRow>;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-  };
-}
-
-let client: SupabaseClient<Database> | null = null;
-
-function getClient() {
-  if (client) return client;
-  const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured.');
-  }
-  client = createClient<Database>(url, serviceKey, { auth: { persistSession: false } });
-  return client;
-}
 
 export async function setUserKey(
   userId: string,
@@ -68,50 +13,41 @@ export async function setUserKey(
   }
   const { ciphertext, iv } = encrypt(trimmed);
   const lastFour = trimmed.slice(-4);
+  const updatedAt = new Date();
 
-  const row: UserApiKeyRow = {
-    user_id: userId,
-    ciphertext,
-    iv,
-    last_four: lastFour,
-    updated_at: new Date().toISOString(),
-  };
-  const { error } = await getClient().from('user_api_keys').upsert(row);
+  await db
+    .insert(userApiKeys)
+    .values({ userId, ciphertext, iv, lastFour, updatedAt })
+    .onConflictDoUpdate({
+      target: userApiKeys.userId,
+      set: { ciphertext, iv, lastFour, updatedAt },
+    });
 
-  if (error) throw new Error(`Failed to store key: ${error.message}`);
   return { lastFour };
 }
 
 // Returns the decrypted plaintext key for server-side use only. Never returned
 // to the client.
 export async function getUserKey(userId: string): Promise<string | null> {
-  const { data, error } = await getClient()
-    .from('user_api_keys')
-    .select('ciphertext, iv')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw new Error(`Failed to read key: ${error.message}`);
-  if (!data) return null;
-  const row = data as Pick<UserApiKeyRow, 'ciphertext' | 'iv'>;
-  return decrypt({ ciphertext: row.ciphertext, iv: row.iv });
+  const [row] = await db
+    .select({ ciphertext: userApiKeys.ciphertext, iv: userApiKeys.iv })
+    .from(userApiKeys)
+    .where(eq(userApiKeys.userId, userId))
+    .limit(1);
+  if (!row) return null;
+  return decrypt(row);
 }
 
 // Returns only the masked last-four for display. Safe to send to the client.
 export async function getUserKeyMeta(userId: string): Promise<{ lastFour: string } | null> {
-  const { data, error } = await getClient()
-    .from('user_api_keys')
-    .select('last_four')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw new Error(`Failed to read key: ${error.message}`);
-  if (!data) return null;
-  const row = data as Pick<UserApiKeyRow, 'last_four'>;
-  return { lastFour: row.last_four };
+  const [row] = await db
+    .select({ lastFour: userApiKeys.lastFour })
+    .from(userApiKeys)
+    .where(eq(userApiKeys.userId, userId))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function deleteUserKey(userId: string): Promise<void> {
-  const { error } = await getClient().from('user_api_keys').delete().eq('user_id', userId);
-  if (error) throw new Error(`Failed to delete key: ${error.message}`);
+  await db.delete(userApiKeys).where(eq(userApiKeys.userId, userId));
 }
