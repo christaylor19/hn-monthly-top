@@ -7,7 +7,7 @@ OpenAI API key — see [docs/api-keys.md](docs/api-keys.md).
 
 ## Structure
 
-Yarn workspaces monorepo:
+pnpm workspaces monorepo:
 
 - `apps/frontend` — SolidJS + Vite SPA (deploys to Vercel)
 - `apps/server` — Fastify API proxying OpenAI and Jina (deploys to Railway)
@@ -15,13 +15,24 @@ Yarn workspaces monorepo:
 ## Development
 
 ```bash
-yarn install
-yarn dev               # runs frontend + server in parallel
-yarn dev:frontend      # frontend only
-yarn dev:server        # server only
+pnpm install
+pnpm dev               # runs frontend + server in parallel
+pnpm dev:frontend      # frontend only
+pnpm dev:server        # server only
 ```
 
 Frontend runs on `http://localhost:5173`. Server runs on `http://localhost:3000`. Vite proxies `/api/*` to the server in dev — no extra config needed.
+
+Other commands:
+
+```bash
+pnpm check             # tsc --noEmit in both apps
+pnpm lint              # ESLint
+pnpm format            # Prettier
+pnpm verify            # lint + prettier check on changed files, typecheck, build both apps
+```
+
+Requires Node 24 (`.nvmrc`) and pnpm 10 (`corepack enable` picks the pinned version).
 
 ## Environment
 
@@ -52,7 +63,7 @@ VITE_SUPABASE_ANON_KEY=       # safe to expose
 
 ### Backend (Railway)
 
-`railway.json` at the repo root configures Railway (Railpack builder) to install with Yarn 4 and run `yarn start:server`. Set the env vars from `apps/server/.env.example` in Railway.
+`railway.json` at the repo root configures Railway (Railpack builder) to install with pnpm (pinned by `packageManager` in `package.json`) and run `pnpm start:server`. Set the env vars from `apps/server/.env.example` in Railway.
 
 The service is connected to GitHub (`christaylor19/hn-monthly-top`, branch `main`), so **pushes to `main` auto-deploy the backend** — no manual step. A manual `railway up --detach` from the repo root still works as a fallback.
 

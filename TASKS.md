@@ -31,9 +31,7 @@ _(nothing active)_
 
 ### Tech / Maintenance
 
-- [ ] **Migrate frontend to TypeScript** — the server (`apps/server`) is fully TS, but `apps/frontend` is all JS/JSX (6 `.js` + 8 `.jsx`, no tsconfig). Convert `.js`→`.ts` and `.jsx`→`.tsx`, add `tsconfig.json` + `tsconfig.node.json`, ensure `vite-plugin-solid` handles TS, and type the Solid signals + Supabase client. Do as one focused pass and re-verify `yarn build`. Lower-risk to do after auth is verified live. Files added this session that are currently JS: `store/auth.js`, `api/keys.js`, `api/summarise.js`, `api/hn.js`, `api/comments.js`, `store/settings.js`, plus all `.jsx` components.
 - [ ] **Add Jina prod API key** — currently using free tier. Add `JINA_API_KEY` on Railway once the app gets meaningful traffic.
-- [ ] **CI** — add a basic GitHub Actions workflow: `yarn install`, `yarn build`. No tests yet but at least catches broken builds.
 - [x] **Auto-deploy Railway from GitHub** — DONE (Jul 2026). Service connected to `christaylor19/hn-monthly-top` (branch `main`) via Settings → Source. Pushes to `main` now auto-deploy the backend; verified empirically — an empty commit produced a deployment that appeared on its own with `repo`/`commitAuthor` in its meta (no `cliCaller`), and the old CLI build was retired. `railway up` still works as a manual fallback.
 - [x] **Auto-deploy Vercel from GitHub** — DONE/already working. Git integration has been connected since Feb 26 (Settings → Git, `christaylor19/hn-monthly-top`, production branch `main`). Pushes to `main` auto-deploy to prod; verified empirically — a push produced a deployment with the `hn-monthly-top-git-main-…` alias (the unforgeable git-trigger tell) without any `vercel --prod`. Earlier "no integration" notes were wrong: manual `vercel --prod` runs were layered on top and masked the auto-deploys in `vercel ls` (all showed `username: ctay`).
 
@@ -58,7 +56,7 @@ _(nothing active)_
 - [x] LLM article + comment summaries via OpenAI (Apr 2026)
 - [x] Markdown-formatted summary output (Apr 2026)
 - [x] Settings cog with verbosity slider (Apr 2026)
-- [x] Migrated to Yarn workspaces monorepo with `apps/frontend` + `apps/server` (Apr 2026)
+- [x] Migrated to Yarn workspaces monorepo with `apps/frontend` + `apps/server` (Apr 2026); moved to pnpm workspaces (Nov 2026)
 - [x] Fastify backend proxy holding OpenAI/Jina keys server-side (Apr 2026)
 - [x] Railway deployment config (`railway.json`, `nixpacks.toml`) (Apr 2026)
 - [x] Backend deployed to Railway, frontend on Vercel — summarise working end to end in prod (Apr 2026)
@@ -73,3 +71,6 @@ _(nothing active)_
 - [x] **Extract `timeAgo` to a util** (Jun 2026) — moved from `StoryRow.jsx` to `src/utils/time.js`.
 - [x] **Remove `hashchange` listener leak** (Jun 2026) — moved into `onMount` with an `onCleanup` `removeEventListener` in `App.jsx`.
 - [x] **Pin Node version** (Jun 2026) — added `.nvmrc` (`22`) alongside the existing `engines.node` field.
+- [x] **Migrate frontend to TypeScript** (Nov 2026) — `apps/frontend` is now strict TS (`.ts`/`.tsx`, no `any`), with `pnpm check` (`tsc --noEmit`) in both apps.
+- [x] **CI** (Nov 2026) — `.github/workflows/ci.yml` runs install, lint, `prettier --check`, typecheck and build on every push to `main` and every PR.
+- [x] **Tooling** (Nov 2026) — pnpm workspaces, all dependencies on latest majors, Node 24, ESLint flat config (`typescript-eslint` + `eslint-plugin-solid`), Prettier, Lefthook pre-commit and `pnpm verify`.
