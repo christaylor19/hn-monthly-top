@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { encrypt, decrypt } from './crypto.js';
 
 // Stores users' OpenAI API keys as ciphertext in Supabase. The key is encrypted
@@ -22,15 +22,30 @@ import { encrypt, decrypt } from './crypto.js';
 // Row shape of the user_api_keys table. The Supabase client is left untyped
 // (its strict generic inference falls back to `never` without generated DB
 // types), so we assert this shape at the read boundary instead.
-interface UserApiKeyRow {
+type UserApiKeyRow = {
   user_id: string;
   ciphertext: string;
   iv: string;
   last_four: string;
   updated_at: string;
+};
+
+interface Database {
+  public: {
+    Tables: {
+      user_api_keys: {
+        Row: UserApiKeyRow;
+        Insert: UserApiKeyRow;
+        Update: Partial<UserApiKeyRow>;
+        Relationships: [];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+  };
 }
 
-let client: ReturnType<typeof createClient> | null = null;
+let client: SupabaseClient<Database> | null = null;
 
 function getClient() {
   if (client) return client;
@@ -39,7 +54,7 @@ function getClient() {
   if (!url || !serviceKey) {
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured.');
   }
-  client = createClient(url, serviceKey, { auth: { persistSession: false } });
+  client = createClient<Database>(url, serviceKey, { auth: { persistSession: false } });
   return client;
 }
 
@@ -61,10 +76,7 @@ export async function setUserKey(
     last_four: lastFour,
     updated_at: new Date().toISOString(),
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped client infers never[] for upsert without generated DB types
-  const { error } = await getClient()
-    .from('user_api_keys')
-    .upsert(row as any);
+  const { error } = await getClient().from('user_api_keys').upsert(row);
 
   if (error) throw new Error(`Failed to store key: ${error.message}`);
   return { lastFour };
