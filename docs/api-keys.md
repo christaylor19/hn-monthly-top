@@ -23,8 +23,8 @@ summarise (cookie sent) ──────▶ look up session from cookie
                                 return summary ◀─────────────
 ```
 
-Auth is [Better Auth](https://www.better-auth.com) (email and password, no email
-verification, no password reset) on Drizzle. The browser never talks to Railway
+Auth is [Better Auth](https://www.better-auth.com) (email and password, password
+reset by email, no email verification) on Drizzle. The browser never talks to Railway
 directly: Vercel proxies `/api/*`, so the session cookie is first-party on
 `hn-monthly-top.vercel.app` and no CORS is needed.
 
@@ -81,6 +81,8 @@ AUTH_SIGNUP_ENABLED=true                       # public sign-up on
 ORIGIN_SECRET=<openssl rand -hex 32>           # same value as on Vercel
 ENCRYPTION_KEY=<node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
 OPENAI_MODEL=gpt-4.1-mini
+RESEND_API_KEY=<Resend API key>               # secret, turns on password reset
+EMAIL_FROM=HN Monthly Top <no-reply@ctaylor.dev>
 ```
 
 ### 3. Frontend env (Vercel)
@@ -98,8 +100,41 @@ purpose, so other people can use the summariser with their own OpenAI key.
 Removing the variable closes sign-up and hides the "Sign up" option
 (`GET /api/auth-config`); existing users can still log in.
 
-There is no email verification or password reset yet. A forgotten password
-means deleting the `user` row in Railway's data tab and signing up again.
+There is no email verification yet.
+
+### Password reset
+
+Password reset sends a link by email through [Resend](https://resend.com). It
+is on only when both `RESEND_API_KEY` and `EMAIL_FROM` are set on Railway.
+Without them, `GET /api/auth-config` returns `passwordResetEnabled: false`, the
+"Forgot password?" link is hidden and `/api/auth/request-password-reset`
+returns `RESET_PASSWORD_DISABLED`.
+
+The domain in `EMAIL_FROM` (e.g. `ctaylor.dev` in
+`HN Monthly Top <no-reply@ctaylor.dev>`) must be verified in Resend, or Resend
+rejects every send. A failed send is logged as `password reset email failed`.
+
+```
+"Forgot password?" → email ──▶ POST /api/auth/request-password-reset
+                                same response whether or not the account exists;
+                                the email is sent without waiting on Resend
+email link ───────────────────▶ GET /api/auth/reset-password/<token> (via Vercel)
+                                token valid   → 302 to /?token=<token>
+                                token invalid → 302 to /?error=INVALID_TOKEN
+SPA reads ?token, clears it ──▶ new password + confirm
+                              ▶ POST /api/auth/reset-password
+                                password changed, token used up,
+                                every session for the user deleted
+"Password changed. Log in with your new password."
+```
+
+The link lasts one hour and works once. Because the SPA is hash-routed, the
+token comes back as a query string on `/`, which `AuthPanel` reads and removes
+from the address bar.
+
+To test locally without sending real email, point the Resend SDK at a stub
+server with `RESEND_BASE_URL=http://127.0.0.1:<port>` and read the reset link
+from the request body it receives.
 
 ## Key rotation
 

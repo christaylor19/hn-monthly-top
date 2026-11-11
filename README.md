@@ -51,6 +51,8 @@ BETTER_AUTH_URL=              # public origin: http://localhost:5173 in dev
 AUTH_SIGNUP_ENABLED=          # "true" to allow new accounts
 ORIGIN_SECRET=                # prod only: must match Vercel's x-origin-secret
 ENCRYPTION_KEY=               # 32-byte base64, encrypts users' OpenAI keys at rest
+RESEND_API_KEY=               # optional: Resend key; with EMAIL_FROM, turns on password reset
+EMAIL_FROM=                   # optional: sender, e.g. HN Monthly Top <no-reply@ctaylor.dev>
 ```
 
 The frontend needs no env vars: it calls same-origin `/api`.

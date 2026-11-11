@@ -23,8 +23,8 @@ _(nothing active)_
 
 ### Accounts
 
-- [ ] **Password reset** — sign-up is public, so real users will forget passwords. Better Auth's `sendResetPassword` needs an email sender (Resend or similar); add the reset request + reset form to `AuthPanel`.
-- [ ] **Email verification** — `requireEmailVerification` once an email sender exists, so accounts can't be made with someone else's address.
+- [x] **Password reset** — DONE (Nov 2026). Better Auth `sendResetPassword` through Resend, "Forgot password?" and the reset form in `AuthPanel`, sessions revoked on reset. Off until `RESEND_API_KEY` and `EMAIL_FROM` are set on Railway (`passwordResetEnabled` on `GET /api/auth-config`).
+- [ ] **Email verification** — `requireEmailVerification` and `sendVerificationEmail` through the Resend sender in `apps/server/src/lib/email.ts`, so accounts can't be made with someone else's address.
 
 ### UX / Polish
 

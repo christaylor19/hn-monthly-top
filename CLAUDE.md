@@ -23,8 +23,9 @@ happens.
 - **Frontend and backend deploy separately.** Vercel serves the SPA and rewrites `/api/*` to the
   Railway API (`vercel.json`), so the SPA calls same-origin `/api` and the session cookie is
   first-party. The server rejects `/api/*` without the `x-origin-secret` Vercel adds.
-- **Auth is Better Auth on Drizzle and Railway Postgres.** Email and password, cookie sessions, no
-  email verification or reset. Sign-up is open to the public on
+- **Auth is Better Auth on Drizzle and Railway Postgres.** Email and password, cookie sessions,
+  password reset by email through Resend (on only when `RESEND_API_KEY` and `EMAIL_FROM` are set),
+  no email verification yet. Sign-up is open to the public on
   purpose (`AUTH_SIGNUP_ENABLED=true` in production); Chris wants other people using it. Migrations live in
   `apps/server/drizzle/` and run in Railway's pre-deploy step.
 - **Node 24 LTS** (`.nvmrc`, `engines.node`).
