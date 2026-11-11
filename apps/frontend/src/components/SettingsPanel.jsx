@@ -96,7 +96,11 @@ export default function SettingsPanel() {
                 <Show when={keyStatus()?.hasKey}>
                   <div class="settings-key-current">
                     Saved: <code>sk-…{keyStatus().lastFour}</code>
-                    <button class="settings-key-remove" onClick={handleRemoveKey} disabled={keyBusy()}>
+                    <button
+                      class="settings-key-remove"
+                      onClick={handleRemoveKey}
+                      disabled={keyBusy()}
+                    >
                       remove
                     </button>
                   </div>
@@ -112,7 +116,11 @@ export default function SettingsPanel() {
                     data-1p-ignore
                     data-lpignore="true"
                   />
-                  <button type="submit" class="settings-key-save" disabled={keyBusy() || !keyInput()}>
+                  <button
+                    type="submit"
+                    class="settings-key-save"
+                    disabled={keyBusy() || !keyInput()}
+                  >
                     {keyBusy() ? '…' : 'Save'}
                   </button>
                 </form>

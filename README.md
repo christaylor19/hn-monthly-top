@@ -59,6 +59,7 @@ The service is connected to GitHub (`christaylor19/hn-monthly-top`, branch `main
 ### Frontend (Vercel)
 
 Build config lives in `vercel.json` at the repo root. Just set the env var in Vercel:
+
 - `VITE_API_URL` = Railway backend URL
 
 If your Vercel project was previously configured with a custom root directory, clear that in Settings → General so the dashboard config doesn't override `vercel.json`.

@@ -54,6 +54,7 @@ out of every place it could leak:
 ## Setup
 
 ### 1. Supabase
+
 1. Create a project at supabase.com.
 2. Apply the schema: `supabase link --project-ref <ref>` then `supabase db push`
    (migration lives in `supabase/migrations/`). Or paste the migration SQL into
@@ -62,6 +63,7 @@ out of every place it could leak:
 4. Project Settings → API → copy the **URL**, **anon key**, **service_role key**.
 
 ### 2. Server env (Railway)
+
 ```
 SUPABASE_URL=https://<ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service_role key>   # secret — server only
@@ -70,6 +72,7 @@ OPENAI_MODEL=gpt-4.1-mini
 ```
 
 ### 3. Frontend env (Vercel)
+
 ```
 VITE_API_URL=https://<your-railway-app>.up.railway.app
 VITE_SUPABASE_URL=https://<ref>.supabase.co
@@ -79,7 +82,7 @@ VITE_SUPABASE_ANON_KEY=<anon key>             # safe to expose
 ## Key rotation
 
 - **A user's OpenAI key:** they paste a new one in settings → overwrites the row.
-- **The server `ENCRYPTION_KEY`:** rotating it invalidates *all* stored keys
+- **The server `ENCRYPTION_KEY`:** rotating it invalidates _all_ stored keys
   (they can no longer be decrypted). There is no re-encryption migration yet —
   users would simply re-enter their keys. Only rotate if the key is compromised.
 

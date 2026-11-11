@@ -26,11 +26,7 @@ export default function StoryRow(props) {
             {props.story.title}
           </a>
         </span>
-        {domain() && (
-          <span class="story-domain">
-            ({domain()})
-          </span>
-        )}
+        {domain() && <span class="story-domain">({domain()})</span>}
       </div>
       <div class="story-subtext">
         {props.story.points} points by {props.story.author} |{' '}

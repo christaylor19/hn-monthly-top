@@ -1,7 +1,5 @@
 export async function fetchComments(storyId) {
-  const res = await fetch(
-    `https://hn.algolia.com/api/v1/items/${storyId}`
-  );
+  const res = await fetch(`https://hn.algolia.com/api/v1/items/${storyId}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
   return extractComments(data.children || [], 0, 60);

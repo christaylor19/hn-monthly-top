@@ -92,23 +92,25 @@ function App() {
       <Show when={!loading() && stories().length > 0}>
         <div class="story-list">
           <For each={visibleStories()}>
-            {(story, i) => (
-              <StoryRow story={story} rank={i() + 1} />
-            )}
+            {(story, i) => <StoryRow story={story} rank={i() + 1} />}
           </For>
         </div>
         <Show when={hasMore()}>
           <div class="more-link">
-            <a href="#" onClick={(e) => { e.preventDefault(); showMore(); }}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                showMore();
+              }}
+            >
               More
             </a>
           </div>
         </Show>
       </Show>
 
-      <div class="footer">
-        Data from Algolia HN Search API | Top stories by points
-      </div>
+      <div class="footer">Data from Algolia HN Search API | Top stories by points</div>
     </>
   );
 }

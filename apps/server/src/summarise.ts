@@ -8,7 +8,8 @@ const VERBOSITY = {
     maxTokens: 400,
   },
   balanced: {
-    article: 'a 2-3 sentence overview, then 4-6 bullet points covering the main arguments and any notable details',
+    article:
+      'a 2-3 sentence overview, then 4-6 bullet points covering the main arguments and any notable details',
     comments: 'a 4-6 sentence summary covering the main themes and any disagreement',
     maxTokens: 800,
   },
@@ -31,7 +32,7 @@ async function callOpenAI(
   apiKey: string,
   systemPrompt: string,
   userContent: string,
-  maxTokens: number
+  maxTokens: number,
 ): Promise<string> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -79,7 +80,7 @@ export async function summariseArticle(
   apiKey: string,
   title: string,
   url: string | undefined,
-  verbosity: string | undefined
+  verbosity: string | undefined,
 ): Promise<{ text: string; titleOnly: boolean }> {
   const v = resolveVerbosity(verbosity);
   const articleContent = url ? await fetchArticleContent(url) : null;
@@ -103,7 +104,7 @@ export async function summariseComments(
   apiKey: string,
   title: string,
   comments: { author: string; text: string }[],
-  verbosity: string | undefined
+  verbosity: string | undefined,
 ): Promise<string> {
   if (!comments.length) throw new Error('No comments to summarise.');
   const v = resolveVerbosity(verbosity);

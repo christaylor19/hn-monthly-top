@@ -2,8 +2,18 @@ import { Show } from 'solid-js';
 import { isoWeeksInYear, currentIsoWeek } from '../api/hn';
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const START_YEAR = 2007;
@@ -53,10 +63,7 @@ export default function MonthPicker(props) {
       </select>
 
       <Show when={period().granularity === 'week'}>
-        <select
-          value={period().week}
-          onChange={(e) => update({ week: parseInt(e.target.value) })}
-        >
+        <select value={period().week} onChange={(e) => update({ week: parseInt(e.target.value) })}>
           {weeks().map((w) => (
             <option value={w}>W{w}</option>
           ))}
@@ -74,10 +81,7 @@ export default function MonthPicker(props) {
         </select>
       </Show>
 
-      <select
-        value={period().year}
-        onChange={(e) => update({ year: parseInt(e.target.value) })}
-      >
+      <select value={period().year} onChange={(e) => update({ year: parseInt(e.target.value) })}>
         {years.map((y) => (
           <option value={y}>{y}</option>
         ))}

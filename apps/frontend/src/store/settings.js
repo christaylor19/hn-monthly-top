@@ -17,13 +17,28 @@ function save(val) {
 const saved = load();
 
 export const VERBOSITY_LEVELS = [
-  { value: 'concise',  label: 'Concise',  article: '1 sentence summary and 2-3 bullet points', comments: '2-3 sentences total' },
-  { value: 'balanced', label: 'Balanced', article: '1 sentence summary and 3-5 bullet points', comments: '3-5 sentences total' },
-  { value: 'detailed', label: 'Detailed', article: '2-3 sentence summary and 5-7 bullet points with extra context', comments: '5-7 sentences with expanded detail' },
+  {
+    value: 'concise',
+    label: 'Concise',
+    article: '1 sentence summary and 2-3 bullet points',
+    comments: '2-3 sentences total',
+  },
+  {
+    value: 'balanced',
+    label: 'Balanced',
+    article: '1 sentence summary and 3-5 bullet points',
+    comments: '3-5 sentences total',
+  },
+  {
+    value: 'detailed',
+    label: 'Detailed',
+    article: '2-3 sentence summary and 5-7 bullet points with extra context',
+    comments: '5-7 sentences with expanded detail',
+  },
 ];
 
 export const [verbosity, setVerbosity] = createSignal(
-  VERBOSITY_LEVELS.find((l) => l.value === saved.verbosity) ?? VERBOSITY_LEVELS[1]
+  VERBOSITY_LEVELS.find((l) => l.value === saved.verbosity) ?? VERBOSITY_LEVELS[1],
 );
 
 export function updateVerbosity(value) {
