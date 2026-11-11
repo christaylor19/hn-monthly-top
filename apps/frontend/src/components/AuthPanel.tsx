@@ -3,14 +3,14 @@ import { session, isConfigured, signInWithEmail, signUpWithEmail, signOut } from
 
 export default function AuthPanel() {
   const [open, setOpen] = createSignal(false);
-  const [mode, setMode] = createSignal('signin'); // 'signin' | 'signup'
+  const [mode, setMode] = createSignal<'signin' | 'signup'>('signin');
   const [email, setEmail] = createSignal('');
   const [password, setPassword] = createSignal('');
-  const [error, setError] = createSignal(null);
+  const [error, setError] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal(false);
-  const [info, setInfo] = createSignal(null);
+  const [info, setInfo] = createSignal<string | null>(null);
 
-  async function submit(e) {
+  async function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
     e.preventDefault();
     setError(null);
     setInfo(null);
@@ -24,7 +24,7 @@ export default function AuthPanel() {
         setOpen(false);
       }
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
     }
@@ -57,7 +57,7 @@ export default function AuthPanel() {
                 placeholder="email"
                 autocomplete="email"
                 value={email()}
-                onInput={(e) => setEmail(e.target.value)}
+                onInput={(e) => setEmail(e.currentTarget.value)}
                 required
                 class="auth-input"
               />
@@ -68,7 +68,7 @@ export default function AuthPanel() {
                 placeholder="password"
                 autocomplete={mode() === 'signup' ? 'new-password' : 'current-password'}
                 value={password()}
-                onInput={(e) => setPassword(e.target.value)}
+                onInput={(e) => setPassword(e.currentTarget.value)}
                 required
                 class="auth-input"
               />

@@ -1,13 +1,13 @@
 import { createSignal, createEffect, onMount, onCleanup, For, Show } from 'solid-js';
-import { fetchTopStories } from './api/hn';
-import { parsePeriodHash, periodToHash, periodLabel } from './utils/period';
+import { fetchTopStories, type Story } from './api/hn';
+import { parsePeriodHash, periodToHash, periodLabel, type Period } from './utils/period';
 import MonthPicker from './components/MonthPicker';
 import StoryRow from './components/StoryRow';
 import Loading from './components/Loading';
 import SettingsPanel from './components/SettingsPanel';
 import AuthPanel from './components/AuthPanel';
 
-function getDefaultPeriod() {
+function getDefaultPeriod(): Period {
   const fromHash = parsePeriodHash(window.location.hash);
   if (fromHash) return fromHash;
   const now = new Date();
@@ -17,10 +17,10 @@ function getDefaultPeriod() {
 const STORIES_PER_PAGE = 30;
 
 function App() {
-  const [period, setPeriod] = createSignal(getDefaultPeriod());
-  const [stories, setStories] = createSignal([]);
+  const [period, setPeriod] = createSignal<Period>(getDefaultPeriod());
+  const [stories, setStories] = createSignal<Story[]>([]);
   const [loading, setLoading] = createSignal(false);
-  const [error, setError] = createSignal(null);
+  const [error, setError] = createSignal<string | null>(null);
   const [visibleCount, setVisibleCount] = createSignal(STORIES_PER_PAGE);
 
   // Keep the hash in sync with the selected period.
@@ -44,7 +44,7 @@ function App() {
         window.scrollTo({ top: 0 });
       })
       .catch((err) => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
         setLoading(false);
       });
   });

@@ -9,4 +9,4 @@ import App from './App';
 // pageviews and enables track() for custom events (see api/summarise.js).
 inject();
 
-render(() => <App />, document.getElementById('root'));
+render(() => <App />, document.getElementById('root') as HTMLElement);

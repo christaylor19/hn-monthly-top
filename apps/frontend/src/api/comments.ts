@@ -1,12 +1,29 @@
-export async function fetchComments(storyId) {
+export interface Comment {
+  author: string;
+  text: string;
+  depth: number;
+}
+
+interface AlgoliaNode {
+  type: string;
+  author: string;
+  text: string | null;
+  children?: AlgoliaNode[];
+}
+
+interface AlgoliaItem {
+  children?: AlgoliaNode[];
+}
+
+export async function fetchComments(storyId: string): Promise<Comment[]> {
   const res = await fetch(`https://hn.algolia.com/api/v1/items/${storyId}`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
-  const data = await res.json();
+  const data = (await res.json()) as AlgoliaItem;
   return extractComments(data.children || [], 0, 60);
 }
 
-function extractComments(nodes, depth, limit) {
-  const results = [];
+function extractComments(nodes: AlgoliaNode[], depth: number, limit: number): Comment[] {
+  const results: Comment[] = [];
   for (const node of nodes) {
     if (results.length >= limit) break;
     if (node.type === 'comment' && node.text) {
@@ -23,7 +40,7 @@ function extractComments(nodes, depth, limit) {
   return results;
 }
 
-function stripHtml(html) {
+function stripHtml(html: string): string {
   return html
     .replace(/<p>/gi, '\n')
     .replace(/<[^>]+>/g, '')

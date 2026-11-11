@@ -1,22 +1,25 @@
 import { createSignal, createEffect, Show } from 'solid-js';
 import { marked } from 'marked';
+import type { Story } from '../api/hn';
 import { fetchComments } from '../api/comments';
 import { summariseArticle, summariseComments } from '../api/summarise';
-import { verbosity } from '../store/settings';
+import { verbosity, type VerbosityValue } from '../store/settings';
+
+type LoadState = 'idle' | 'loading' | 'done' | 'error';
 
 marked.setOptions({ breaks: true });
 
-export default function SummaryPanel(props) {
-  const [activeTab, setActiveTab] = createSignal('article');
-  const [articleSummary, setArticleSummary] = createSignal(null);
+export default function SummaryPanel(props: { open: boolean; story: Story }) {
+  const [activeTab, setActiveTab] = createSignal<'article' | 'comments'>('article');
+  const [articleSummary, setArticleSummary] = createSignal<string | null>(null);
   const [articleTitleOnly, setArticleTitleOnly] = createSignal(false);
-  const [articleVerbosity, setArticleVerbosity] = createSignal(null);
-  const [commentsSummary, setCommentsSummary] = createSignal(null);
-  const [commentsVerbosity, setCommentsVerbosity] = createSignal(null);
-  const [articleState, setArticleState] = createSignal('idle'); // idle | loading | done | error
-  const [commentsState, setCommentsState] = createSignal('idle');
-  const [articleError, setArticleError] = createSignal(null);
-  const [commentsError, setCommentsError] = createSignal(null);
+  const [articleVerbosity, setArticleVerbosity] = createSignal<VerbosityValue | null>(null);
+  const [commentsSummary, setCommentsSummary] = createSignal<string | null>(null);
+  const [commentsVerbosity, setCommentsVerbosity] = createSignal<VerbosityValue | null>(null);
+  const [articleState, setArticleState] = createSignal<LoadState>('idle'); // idle | loading | done | error
+  const [commentsState, setCommentsState] = createSignal<LoadState>('idle');
+  const [articleError, setArticleError] = createSignal<string | null>(null);
+  const [commentsError, setCommentsError] = createSignal<string | null>(null);
 
   createEffect(() => {
     if (!props.open) return;
@@ -37,7 +40,7 @@ export default function SummaryPanel(props) {
       setArticleVerbosity(verbosity().value);
       setArticleState('done');
     } catch (e) {
-      setArticleError(e.message);
+      setArticleError(e instanceof Error ? e.message : String(e));
       setArticleState('error');
     }
   }
@@ -51,12 +54,12 @@ export default function SummaryPanel(props) {
       setCommentsVerbosity(verbosity().value);
       setCommentsState('done');
     } catch (e) {
-      setCommentsError(e.message);
+      setCommentsError(e instanceof Error ? e.message : String(e));
       setCommentsState('error');
     }
   }
 
-  function switchTab(tab) {
+  function switchTab(tab: 'article' | 'comments') {
     setActiveTab(tab);
     if (tab === 'article' && articleState() === 'idle') loadArticle();
     if (tab === 'comments' && commentsState() === 'idle') loadComments();
@@ -106,14 +109,21 @@ export default function SummaryPanel(props) {
   );
 }
 
-function SummaryContent(props) {
+function SummaryContent(props: {
+  state: LoadState;
+  text: string | null;
+  titleOnly?: boolean;
+  stale: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
   return (
     <>
       <Show when={props.state === 'loading'}>
         <span class="summary-loading">Summarising...</span>
       </Show>
       <Show when={props.state === 'done'}>
-        <div class="summary-text" innerHTML={marked.parse(props.text)} />
+        <div class="summary-text" innerHTML={marked.parse(props.text ?? '', { async: false })} />
         <div class="summary-footer">
           <Show when={props.titleOnly}>
             <span class="summary-title-only">
@@ -121,7 +131,7 @@ function SummaryContent(props) {
             </span>
           </Show>
           <Show when={props.stale}>
-            <button class="summary-retry" onClick={props.onRetry}>
+            <button class="summary-retry" onClick={() => props.onRetry()}>
               Regenerate for new verbosity
             </button>
           </Show>
@@ -129,7 +139,7 @@ function SummaryContent(props) {
       </Show>
       <Show when={props.state === 'error'}>
         <span class="summary-error">{props.error}</span>
-        <button class="summary-retry" onClick={props.onRetry}>
+        <button class="summary-retry" onClick={() => props.onRetry()}>
           Retry
         </button>
       </Show>

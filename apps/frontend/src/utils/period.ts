@@ -6,33 +6,46 @@
 // The month scheme matches the original shareable-URL format, so links shared
 // before period selection existed keep resolving.
 
-export function parsePeriodHash(hash) {
+export type Granularity = 'year' | 'month' | 'week';
+
+export interface Period {
+  granularity: Granularity;
+  year: number;
+  month?: number;
+  week?: number;
+}
+
+export function parsePeriodHash(hash: string): Period | null {
   const h = hash.replace(/^#/, '');
 
   let m = h.match(/^(\d{4})-W(\d{1,2})$/);
   if (m) {
-    return { granularity: 'week', year: parseInt(m[1]), week: parseInt(m[2]) };
+    return { granularity: 'week', year: parseInt(m[1] ?? '', 10), week: parseInt(m[2] ?? '', 10) };
   }
 
   m = h.match(/^(\d{4})-(\d{1,2})$/);
   if (m) {
-    return { granularity: 'month', year: parseInt(m[1]), month: parseInt(m[2]) };
+    return {
+      granularity: 'month',
+      year: parseInt(m[1] ?? '', 10),
+      month: parseInt(m[2] ?? '', 10),
+    };
   }
 
   m = h.match(/^(\d{4})$/);
   if (m) {
-    return { granularity: 'year', year: parseInt(m[1]) };
+    return { granularity: 'year', year: parseInt(m[1] ?? '', 10) };
   }
 
   return null;
 }
 
-export function periodToHash(period) {
+export function periodToHash(period: Period): string {
   if (period.granularity === 'year') return `${period.year}`;
   if (period.granularity === 'week') {
-    return `${period.year}-W${String(period.week).padStart(2, '0')}`;
+    return `${period.year}-W${String(period.week ?? 1).padStart(2, '0')}`;
   }
-  return `${period.year}-${String(period.month).padStart(2, '0')}`;
+  return `${period.year}-${String(period.month ?? 1).padStart(2, '0')}`;
 }
 
 // Human-readable label for the empty/heading states.
@@ -51,8 +64,8 @@ const MONTH_NAMES = [
   'December',
 ];
 
-export function periodLabel(period) {
+export function periodLabel(period: Period): string {
   if (period.granularity === 'year') return `${period.year}`;
-  if (period.granularity === 'week') return `week ${period.week}, ${period.year}`;
-  return `${MONTH_NAMES[period.month - 1]} ${period.year}`;
+  if (period.granularity === 'week') return `week ${period.week ?? 1}, ${period.year}`;
+  return `${MONTH_NAMES[(period.month ?? 1) - 1]} ${period.year}`;
 }

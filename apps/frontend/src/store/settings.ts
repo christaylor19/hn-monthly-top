@@ -2,21 +2,34 @@ import { createSignal } from 'solid-js';
 
 const STORAGE_KEY = 'hn-settings';
 
-function load() {
+interface StoredSettings {
+  verbosity?: string;
+}
+
+export type VerbosityValue = 'concise' | 'balanced' | 'detailed';
+
+export interface VerbosityLevel {
+  value: VerbosityValue;
+  label: string;
+  article: string;
+  comments: string;
+}
+
+function load(): StoredSettings {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') as StoredSettings;
   } catch {
     return {};
   }
 }
 
-function save(val) {
+function save(val: StoredSettings): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
 }
 
 const saved = load();
 
-export const VERBOSITY_LEVELS = [
+export const VERBOSITY_LEVELS: VerbosityLevel[] = [
   {
     value: 'concise',
     label: 'Concise',
@@ -37,11 +50,13 @@ export const VERBOSITY_LEVELS = [
   },
 ];
 
-export const [verbosity, setVerbosity] = createSignal(
-  VERBOSITY_LEVELS.find((l) => l.value === saved.verbosity) ?? VERBOSITY_LEVELS[1],
+const defaultLevel = VERBOSITY_LEVELS.find((l) => l.value === 'balanced') as VerbosityLevel;
+
+export const [verbosity, setVerbosity] = createSignal<VerbosityLevel>(
+  VERBOSITY_LEVELS.find((l) => l.value === saved.verbosity) ?? defaultLevel,
 );
 
-export function updateVerbosity(value) {
+export function updateVerbosity(value: string): void {
   const level = VERBOSITY_LEVELS.find((l) => l.value === value);
   if (!level) return;
   setVerbosity(level);
